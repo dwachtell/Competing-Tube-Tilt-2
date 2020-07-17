@@ -144,7 +144,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
         // calculate appropriate image size
         var ratio = origImageDim.width / screenWidth;
         var newImgHeight = Math.round(origImageDim.height / ratio);
-        var canvHeight_NoImage = Math.floor((origImageDim.height - newImgHeight) / 2);   // Math.floor ensures that the canvas boundaries are not larger than screen to avoid scrollable screens
+        var canvHeight_NoImage = Math.floor((screenHeight - newImgHeight) / 2);   // Math.floor ensures that the canvas boundaries are not larger than screen to avoid scrollable screens
 
         // get allowed tilt direction from image names (important for correct movement directions)
         const tiltRIGHT = trialParams.TiltDirection == "RIGHT"; // true if tilting RIGHT
@@ -158,7 +158,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
             allow_held_key: trial.allow_held_key,
         });
         if (verbose) {console.log('Listening for Keys: ' + trial.key_increase + ', ' + trial.key_decrease + ', and ' + trial.key_continue)}
-        
+             
         // Start Experiment
         drawViewing();
 
@@ -398,9 +398,6 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
             jsPsych.finishTrial(trial_data);
 
         };
-        
-
-
     };
 
     return plugin;

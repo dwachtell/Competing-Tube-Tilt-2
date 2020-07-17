@@ -232,6 +232,36 @@
             return(true) // repeat checkInstructions
         }
     }
+    
+
+    function TT_AttentionModulator_Stim(imagePath){
+
+        // get image for original image size
+        var img_Viewing = new Image();
+        img_Viewing.src = imagePath;
+        const origImageDim = { // get real image size
+            width: img_Viewing.width,
+            height: img_Viewing.height,
+        }
+        
+        // first get screen and image size
+        const screenWidth = window.innerWidth // screen.availWidth;
+        const screenHeight = window.innerHeight;// screen.availHeight
+        var ratio = origImageDim.width / screenWidth;
+        var newImgHeight = Math.round(origI mageDim.height / ratio);
+        var canvHeight_NoImage = Math.floor((screenHeight - newImgHeight) / 2);
+        var question = 'Does Davis see the left or right side of the tube? (Indicate using the arrows)'
+        
+        
+        html = `<!DOCTYPE html><html><body>`
+    html += `<div id='Blank_TOP' width=` + screenWidth + ` height= ` + canvHeight_NoImage + `> <p>` + question + `</p></div>` 
+        html += `<div id="viewingImage" width='` + screenWidth + `' height= '` + newImgHeight + `'>
+                 <img src='` + imagePath + `' width='` + screenWidth + `' height= '` + newImgHeight + `'></div>`
+        html += `<div id='Blank_BOTTOM' width = ` + screenWidth + ` height = ` + canvHeight_NoImage + `></div>`
+        html += `</body></html>`
+        return(html)
+
+    }
 
 
     /**************************/
@@ -239,6 +269,27 @@
     /**** Practice  Trials ****/
     /**************************/
     /**************************/
+
+    var TT_Practice_AttentionModulator = {
+        type: 'html-keyboard-response',
+        stimulus: function(){
+            return(TT_AttentionModulator_Stim(jsPsych.timelineVariable('viewing', true)))
+        },
+        choices: [37, 39],
+        response_ends_trial: true,
+        loop_function: function() {
+            // get correct answer
+            var trialParams = imagePath.split("/")[2].split("_");
+            var trialParams = { // the numeric details are based on the file names
+                "FaceType": trialParams[0],
+                "TiltDirection": trialParams[1],
+            }
+            return(false)
+        }
+
+    }
+
+
     var TubeTilt_PracticeTrials = {
         type:'Davis-Tube-Tilt',
         img_Viewing: function() {
@@ -260,7 +311,7 @@
     }
 
     var practiceTrialBlock = {
-        timeline: [TubeTilt_PracticeTrials],
+        timeline: [TT_Practice_AttentionModulator, TubeTilt_PracticeTrials],
         randomize_order: true,
         repetitions: 1,
         background_color: "#D3D3D3",
@@ -505,19 +556,18 @@
 
     jsPsych.init({
         timeline: [
-            pre_exp_survey_block, // Pre Experiment Survey Block
-            go_fullscreen,  // Go Fullscreen
-            ScreenDims, // Get the Screen Dims with comparison to credit card
-            instructions, // Show instructions
-            checkInstructions_Loop, // Make sure instructions are understood
+            //            pre_exp_survey_block, // Pre Experiment Survey Block
+            //            go_fullscreen,  // Go Fullscreen
+            //            ScreenDims, // Get the Screen Dims with comparison to credit card
+            //            instructions, // Show instructions
+            //            checkInstructions_Loop, // Make sure instructions are understood
             practiceStartScreen, // Start the practice trials
             practiceTrialBlock, // Do the practice Trials
-            mainStartScreen, // Start the main trials
-            mainTrialBlock, // Do the main trials
-            post_exp_survey_block, // Post Experiment Survey Block
-            DataSave, // Save the data
-            go_off_fullscreen, // Go off fullscreen
-            end_experiment // end the experiment with prolific link
+            //            mainStartScreen, // Start the main trials
+            //            mainTrialBlock, // Do the main trials
+            //            DataSave, // Save the data
+            //            go_off_fullscreen, // Go off fullscreen
+            //            end_experiment // end the experiment with prolific link
         ],
         show_preload_progress_bar: true,
         use_webaudio: false,
