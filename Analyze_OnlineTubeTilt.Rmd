@@ -1,0 +1,203 @@
+---
+title: "Online Tube Tilt Analysis"
+author: "Davis Wachtell"
+date: "7/8/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(reshape2)
+```
+
+# Import
+## 3 directories to worry about
+- data/pInfo 
+- data/raw
+- data/respMats   
+
+---
+
+* raw will be helpful if something goes wrong, but we will only look at pInfo and respMats
+```{r import}
+## participant info (pInfo) - json files
+dataDir_pInfo <- "data/pInfo"
+files_pInfo <- list.files(dataDir_pInfo, full.names = T)
+pInfo <- data.table::rbindlist(lapply(files_pInfo, function(pInfo_file) {
+  # pInfo_file = files_pInfo[[1]]
+  tmp <- unlist(rjson::fromJSON(file = pInfo_file),use.names = T)
+  return(data.frame(t(tmp)))
+}), fill = T)
+
+
+
+## respMats
+dataDir_respMats <- "data/respMats"
+files_respMats <- list.files(dataDir_respMats, full.names = T)
+respMats <- lapply(files_respMats, function(data) {
+  read_csv(data, 
+  col_types = list(
+    FinalLinePosition = col_double(),
+    FaceType = col_factor(),
+    TiltDirection = col_factor(),
+    TubeType = col_factor(),
+    timeViewing = col_double(),
+    timeMoving = col_double(),
+    ViewingImage = col_character(),
+    MovingImage = col_character(),
+    isPractice = col_logical()
+  ))
+})
+names(respMats) <- pInfo$subject_ID
+
+```
+
+
+
+# Beautify
+```{r Beautify}
+# resort columns of pInfo
+pInfo <-  pInfo[,  c("subject_ID", "date", "consent", "age",
+                    "handedness", "gender", "CheckInstructionsAreUnderstood",
+                    "startTime", "totalTime", "Hypothesis", "HeadInfluence_Bool",
+                    "HeadInfluence_string", "AdditionalComments", 
+                    
+                    # Screen attributes and size
+                    "screenHeight", "screenHeight_Inches", "screenWidth",
+                    "screenWidth_Inches", "screenDiagonal_Inches",
+                    
+                    # webkit enviornment
+                    "browser", "platform", "userAgent", "language", "os_cpu",
+                    
+                    # other info
+                    "expName", "fileName", "dateFormatted", "csvFilename", "jsonFilename")]
+
+## Fix Dates
+# 2020-07-15T13:22:45.551Z
+
+year_month_day = hour_minute_second.ms = NULL
+for (indx in 1:length(pInfo$date)) {
+  
+  # Get timezone
+  dashIndx = gregexpr('-', pInfo$dateFormatted[indx])[[1]]
+  if (any(diff(dashIndx) == 1)) {
+    
+  }
+  
+  
+  gregexpr('-', pInfo$dateFormatted[indx])
+  tzOffset = pInfo$dateFormatted
+  
+  year_month_day[indx] = as.POSIXct(pInfo$date[indx])
+  hour_minute_second.ms[indx] = as_datetime(pInfo$date[indx])
+}
+
+as.POSIXct(year_month_day,origin = "GMT")
+
+
+base = strsplit(pInfo$date[[10]],c("T"))[[1]]
+sapply(gregexpr('-', pInfo$dateFormatted), head)
+stringi::stri_inde
+
+stringi::stri_datetime_parse(pInfo$date, format = "yyyy-MM-dd'HH:mm:ss.SSZZ", tz = "GMT")
+stringi::stri_datetime_parse(base[2], 'HH:mm:ss.SSZ',tz = )
+stringi::stri_datetime_fstr("yyyy-MM-dd'THH:mm:ss'''''")
+
+  
+# respMats
+## Remove practice Trials
+respMats <- lapply(respMats, function(x) {
+  return(x[x$isPractice == F, ])
+})
+
+```
+
+# Analyze
+```{r}
+dAng <- sapply(respMats, function(data){
+  #data = respMats[[1]]
+  isCongruent <- ((data$FaceType == "CO") & (data$TiltDirection == "LEFT")) |
+    ((data$FaceType == "OC") & (data$TiltDirection == "RIGHT"))
+  
+  comp = aggregate(abs(FinalLinePosition)~isCongruent, data = data, FUN = mean)
+  
+  return(comp[comp$isCongruent == F,'abs(FinalLinePosition)'] - # Incongruent - Congruent
+           comp[comp$isCongruent == T,'abs(FinalLinePosition)'])
+})
+
+mean(dAng)
+sd(dAng)
+t.test(dAng)
+```
+
+
+
+# Plot
+```{r}
+# Melt all data
+gg_dAng <- data.frame(dAng) %>%
+  mutate(Subject = pInfo$subject_ID, .before = dAng) %>%
+  mutate(SubjectIndex = factor(1:length(dAng)))
+
+ggplot(gg_dAng, aes(x = 1, y = dAng)) + 
+  # clean formatting
+  theme_bw() + 
+  
+  # Title and legend positioning
+  theme(plot.title =  element_text(hjust = 0.5),
+        plot.subtitle =  element_text(hjust = 0.5, size = 10),
+        legend.title.align = 0.5,
+        legend.text = element_text(size = 8),
+        legend.key.width = unit(0.05, "cm"),
+        legend.key.height = unit(4, "mm")) +
+  
+    # Add a line at y = 0
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) + 
+  
+  # Axis Titles
+  ylab((expression(Delta*"Angle (degrees)"))) + xlab("Incongruent - Congruent") + 
+  
+  # Density Plot for each dot speed
+  geom_violin(aes(fill = 1,),
+              alpha = 0.25, show.legend = F, color = NA) +
+  
+  # Jitter points
+  geom_jitter(aes(color = SubjectIndex), width = 1 / 4 / 4) +
+
+# Bar Plot summary of mean dRT
+stat_summary(geom = "col", fun = mean,  show.legend = F, colour = "black",
+             fill = NA, position = position_dodge(width = 1),
+             width = 1 / 4) +
+  
+  # Point of exact mean
+  stat_summary(fun = mean, geom = "point", show.legend = F) +
+  
+  # ErrorBars of mean and SE
+  stat_summary(geom = "errorbar", fun.data = "mean_se", width = 1 / 4 / 2,
+               fun.args = list(mult = 1))  +
+  
+  
+  
+  # Title and caption text
+  labs(title = expression("Online Tube Tilt " * Delta * "Angle"),
+       color = "Subject",
+       caption = paste("Dotted Line is along y = 0. Violin Plot Shows Density as a Volume.\n",
+                       "Box P-Values show One Sample t-test versus a sample of mean 0.\n", 
+                       "N =", length(unique(gg_dAng$Subject)))) +
+  # Add p-value labels
+    annotate(geom = "label", x = 1, size = 3,
+             y = min(gg_dAng$dAng) * 1.2,
+             label = paste("p = ", signif(t.test(gg_dAng$dAng)$p.value, 
+                                          digits = 3)))  +
+    # Add p-value labels
+    annotate(geom = "label", x = 1.25, size = 3,
+             y = mean(gg_dAng$dAng),
+             label = paste("Mean = ", signif(mean(gg_dAng$dAng), 
+                                          digits = 3)))
+  
+
+```
+
