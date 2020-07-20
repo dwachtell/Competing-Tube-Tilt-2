@@ -14,14 +14,14 @@
  *
  */
 
-jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
-    
+jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
+
     /*
-    
+
     ** Still To Do ** 
     - (Way later) generalize to more experiment types
     - 
-    
+
     */
 
     var plugin = {};
@@ -36,7 +36,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
                 default: null,
                 description: 'The desired image to be centered and shown during the Viewing Phase'
             },
-            img_Moving:{
+            img_Moving: {
                 type: jsPsych.plugins.parameterType.STRING,
                 pretty_name: "Moving Phase Image",
                 default: null,
@@ -53,12 +53,6 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
                 pretty_name: 'Key increase',
                 default: [39], // right arrow
                 description: 'The key to press for increasing the parameter value.'
-            },
-            isPractice: {
-                type: jsPsych.plugins.parameterType.BOOL,
-                pretty_name: 'Is Practice?',
-                default: false,
-                description: "If practice, data is marked"
             },
             key_decrease: {
                 type: jsPsych.plugins.parameterType.KEYCODE,
@@ -90,6 +84,12 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
                 default: "#D3D3D3",
                 description: "The background color as a hexadecimal value"
             },
+            isPractice: {
+                type: jsPsych.plugins.parameterType.BOOL,
+                pretty_name: 'Is Practice?',
+                default: false,
+                description: "If practice, data is marked"
+            },
             verbose: {
                 type: jsPsych.plugins.parameterType.BOOL,
                 pretty_name: 'Verbose',
@@ -100,285 +100,497 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
         }
     }
 
-    plugin.trial = function(display_element, trial) {
-        
-        var verbose = trial.verbose;
+    plugin.trial = function (display_element, trial) {
 
-        // Initialize Variables 
-        const lineStart = 0; // line starts vertical (0 degrees)
-        const tilt_leftMax = -90; 
+        /**************************/
+        /**************************/
+        /***Initalize  Variables***/
+        /**************************/
+        /**************************/
+        //var display_element = jsPsych.getDisplayElement();
+        const lineStart = 0;
         const tilt_rightMax = 90;
-        var linePos = lineStart;
-        var stateViewing = true; // trial operates with either a viewing state or a moving state
-        // timing parameters
-        var tStart_Viewing;
-        var tEnd_Moving;
-        var tStart_Moving = null;
-        var tEnd_Viewing = null;
+        const tilt_leftMax = -tilt_rightMax;
+        var linePos = lineStart; // line position
+        var tStart_Humanize, tEnd_Humanize, tStart_Viewing, tEnd_Moving, tStart_Moving, tEnd_Viewing
+        const states = ["Humanize", "Viewing", "Moving"];
+        var humanize_errorDelay = 1500; // 1.5 seconds
+        var nHumanizeTrials = 0;
 
-        
-        // get image for original image size
+        // setup a state tracking object
+        var state = {
+            state_indx: 0,
+            get cState() { return (states[this.state_indx]) }, // returns current state as a string
+            get nextState() { if (this.state_indx < states.length) { this.state_indx++ } }, // increments the state 
+            get isHumanize() {return (states[this.state_indx] == "Humanize") },
+            get isViewing() { return (states[this.state_indx] == "Viewing") },
+            get isMoving() { return (states[this.state_indx] == "Moving") },
+
+        }
+
+        /**************************/
+        /**************************/
+        /** Get Image Attributes **/
+        /**************************/
+        /**************************/
+
+        // Original Image Size
         var img_Viewing = new Image();
         img_Viewing.src = trial.img_Viewing;
-        const origImageDim = { // get real image size
+        const origImageDims = { // get real image size
             width: img_Viewing.width,
             height: img_Viewing.height,
         }
-        
-        // store image paths for html calls
+
+        // image path and parameters
         const imgViewing = trial.img_Viewing; // the image for the Viewing Screen
-        const imgMoving  = trial.img_Moving; // the image for the Moving Screen
-        var trialParams = imgViewing.split("/")[2].split("_");
-        var trialParams = { // the numeric details are based on the file names
-            "FaceType": trialParams[0],
-            "TiltDirection": trialParams[1],
-            "TubeType": trialParams[2].split(".")[0]
+        const imgMoving = trial.img_Moving; // the image for the Moving Screen
+        var tp = imgViewing.split("/")[2].split("_");
+        var trialParams = { // the numeric index details are based on the file names
+            FaceType: tp[0], // OC or CO
+            TiltDirection: tp[1], // LEFT or RIGHT
+            TubeType: tp[2].split(".")[0], // drop the .jpg element // TT, TF, ST, SF
+            get isTiltingRight() {
+                return (tp[1] == "RIGHT")
+            },
         }
-        
-        // get screen size
+
+
+        /**************************/
+        /**************************/
+        /* Screen + new Image Size /
+        /**************************/
+        /**************************/
+
+        // screen size
         const screenWidth = window.innerWidth // screen.availWidth;
-        const screenHeight = window.innerHeight;// screen.availHeight
-        if (verbose) {console.log('imgViewing:' + imgViewing); console.log('imgMoving' + imgMoving)};
+        const screenHeight = window.innerHeight; // screen.availHeight
 
-        
-        // calculate appropriate image size
-        var ratio = origImageDim.width / screenWidth;
-        var newImgHeight = Math.round(origImageDim.height / ratio);
-        var canvHeight_NoImage = Math.floor((screenHeight - newImgHeight) / 2);   // Math.floor ensures that the canvas boundaries are not larger than screen to avoid scrollable screens
+        // new image and canvas dimensions
+        var ratio = origImageDims.width / screenWidth;
+        var newImgHeight = Math.round(origImageDims.height / ratio);
+        var canvHeight_NoImage = Math.floor((screenHeight - newImgHeight) / 2)
 
-        // get allowed tilt direction from image names (important for correct movement directions)
-        const tiltRIGHT = trialParams.TiltDirection == "RIGHT"; // true if tilting RIGHT
-        
-        // Check for keycode changes (listen for responses)
-        var key_listener = jsPsych.pluginAPI.getKeyboardResponse({
-            callback_function: keyParser,
-            valid_responses: [trial.key_increase, trial.key_decrease, trial.key_continue],
-            rt_method: 'performance',
-            persist: true,
-            allow_held_key: trial.allow_held_key,
-        });
-        if (verbose) {console.log('Listening for Keys: ' + trial.key_increase + ', ' + trial.key_decrease + ', and ' + trial.key_continue)}
-             
-        // Start Experiment
-        drawViewing();
+        /**************************/
+        /**************************/
+        /*** Humanization Phase ***/
+        /**************************/
+        /**************************/
+        var drawHumanize = function () {
+            if (!state.isHumanize) {alert('Not in Humanizing State'); return }
 
-        // Parse the keyCode Response when made
-        function keyParser(keyCode){
+            console.log('drawHumanize')
+            console.log('state: ' + state.cState)
+            if (!state.isHumanize) {return}
+
+            // start timer if not started
+            if (tStart_Humanize == undefined) { tStart_Humanize = draw(); };
+
+            // find correct key
+            var keyCorrect = (trialParams.FaceType == "OC") ? trial.key_decrease : trial.key_increase
+
+
+            // setup key listener
+            var keyListener_Humanize = jsPsych.pluginAPI.getKeyboardResponse({
+                callback_function: keyHandler_Humanize,
+                valid_responses: [trial.key_increase, trial.key_decrease],
+                rt_method: 'performance',
+                persist: true,
+                allow_held_key: false
+            })
             
-            // if the buttons are not the numerical keynumber, then its a string keycode (ex. 'f', 'j')
-            var keyRight = (typeof trial.key_increase == 'string') ? jsPsych.pluginAPI.convertKeyCharacterToKeyCode(trial.key_increase) : trial.key_increase;
-            var keyLeft = (typeof trial.key_decrease == 'string') ? jsPsych.pluginAPI.convertKeyCharacterToKeyCode(trial.key_decrease) : trial.key_decrease;
-            var keyContinue = (typeof trial.key_continue == 'string') ? jsPsych.pluginAPI.convertKeyCharacterToKeyCode(trial.key_continue) : trial.key_continue;
-            
-            // print status of key and line
-            if (verbose) {console.log('stateViewing: ' + stateViewing); console.log('keyCode: ' + keyCode.key); console.log('linePos: ' + linePos)}
-            
-            // stop viewing timer upon first keystroke
-            if (tEnd_Viewing == null) {
-                    tEnd_Viewing = performance.now();
-            }
+            // initilize timeout timer to be greater than timeout period (if no wrong answers, allows to continue immediately)
+            var timeoutTimer;
 
+            // setup key handler
+            function keyHandler_Humanize(keyCode) {
+                // find out if correct key was pressed
+                if (jsPsych.pluginAPI.compareKeys(keyCode.key, keyCorrect)) {
+                    
+                    // if timout timer is undefined ==> no missed trial, continue
+                    // if timeout timer is defined ==> missed trial, ensure time since answer is greater than timeout
+                    if( (timeoutTimer == undefined) || (performance.now() - timeoutTimer > humanize_errorDelay)){
+                    
 
-            if ((keyCode.key == keyRight) && (linePos < tilt_rightMax)) {
-                // if tilting right and line position is less than 90, do nothing
-                // if tilting left and line posiiton is greater than 90, do nothing
-                if ( (tiltRIGHT  && (linePos < lineStart)) || (!tiltRIGHT && (linePos > lineStart - 1)) ) { linePos = lineStart; return;  } 
-                
-                
-                // adjust object states
-                linePos += trial.step_size;
-                stateViewing = false;
-                
-                drawMoving(); return;
-            }
+                    // record end time
+                    tEnd_Humanize = performance.now();
 
-            if (keyCode.key == keyLeft && (linePos > tilt_leftMax)) {
-                // if tilting right and the line position is less than 90, do nothing.
-                // if tilting left and the line position is greater than 90, do nothing.
-                if ( (tiltRIGHT && (linePos < lineStart + 1)) || (!tiltRIGHT && (linePos > lineStart)) ) { linePos = lineStart; return }
-                
-                // // adjust object states
-                linePos -= trial.step_size;
-                stateViewing = false;
-                
-                drawMoving(); return;
-            }
-
-            if ((keyCode.key == keyContinue) && (!stateViewing)) {      
-                // stop moving period timer
-                tEnd_Moving = performance.now();
-                
-                // end trial
-                endTrial(); return;
-            }
-            
-
-        }
-        
-        // function to draw the viewing screen
-        function drawViewing() {
-            // start viewing timer 
-            tStart_Viewing = performance.now();
-
-            html = 
-                `
-            <!DOCTYPE html>
-            <style type="text/css">
-                * {cursor: none;}
-            </style>
-
-            <html>
-                <body>
-                    <canvas id='Blank_TOP' width = ` + screenWidth + ` height= ` + canvHeight_NoImage + `></canvas>
-                    <canvas id="viewingImage" width=` + screenWidth + ` height= ` + newImgHeight + `></canvas>
-                    <canvas id='Blank_BOTTOM' width = ` + screenWidth + ` height = ` + canvHeight_NoImage + `></canvas>
-                </body>
-            
-                <script>
-                    var canvas_top = document.getElementById('Blank_TOP');
-                    var ctx_top = canvas_top.getContext('2d');
-                    ctx_top.fillStyle = "` + trial.background_color + `";
-                    ctx_top.fillRect(0, 0, canvas_top.width, canvas_top.height);
-
-                    var canvas_bottom = document.getElementById('Blank_BOTTOM');
-                    var ctx_bottom = canvas_bottom.getContext('2d');
-                    ctx_bottom.fillStyle = "` + trial.background_color + `";
-                    ctx_bottom.fillRect(0, 0, canvas_bottom.width, canvas_bottom.height);
-
-                    var canvas_IMG = document.getElementById('viewingImage');
-                    var ctx_IMG = canvas_IMG.getContext('2d');
-
-                    var img = new Image;
-                    img.src = '` + imgViewing + `';
-
-                    img.onload = function() {
-                        ctx_IMG.drawImage(img, 0, 0, ` + screenWidth + `, ` + newImgHeight + `);
+                    // cancel keyboard listener
+                    jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Humanize)
+                    
+                    // shift states
+                    state.nextState;
+                    
+                    // draw the viewing phase (and return for callback)
+                    drawViewing(); return;
                     }
+                } else {
+                    timeoutTimer = performance.now();
+                    display_element.innerHTML = `<p> Davis cannot see that side of the tube! <br> Please try again.`
+                    jsPsych.pluginAPI.setTimeout(draw, humanize_errorDelay)
+                }
+            }
 
 
-                </script>
+            function draw() {
+                // increment number of humanize trials
+                nHumanizeTrials ++;
+                
+                // question shown on screen
+                var question = 'Does Davis see the left or right side of the tube? (Indicate using the arrows)'
 
-            </html>
-            `;
-            
-            applyScripts(html)
+                // get HTML
+                html = `<!DOCTYPE html>`
+                /* Style ELEMENTS */
+                html += `<style>`
+                html += `*{ cursor: none; overflow: hidden; background-color:` + trial.background_color + `; };`
+                html += `</style>`
+
+                html += `<html>`
+
+                /* CANVAS ELEMENTS */
+                html += `<body>`
+                html += `<canvas id="Blank_TOP";    width = ` + screenWidth + `; height = ` + canvHeight_NoImage + `;></canvas>`
+                html += `<canvas id="viewingImage"; width = ` + screenWidth + `; height = ` + newImgHeight       + `;></canvas>`
+                html += `<canvas id="Blank_BOTTOM"; width = ` + screenWidth + `; height = ` + canvHeight_NoImage + `;></canvas>`
+                html += `</body>`
+
+                /* SCRIPT ELEMENTS */
+                html += `<script>`
+
+                // top canvas
+                html += `var canvas_top = document.getElementById('Blank_TOP');` // get canvas
+                html += `var ctx_top = canvas_top.getContext('2d');` // get 2d context
+                html += `ctx_top.fillStyle = "black";` // set new fill color
+                html += `ctx_top.textAlign = "center";` // center new text
+                html += `ctx_top.font = "20px Arial";` // set font for new text
+                html += `ctx_top.fillText("` + question + `", canvas_top.width / 2, canvas_top.height * 0.9);` // show text
+
+                // canvas bottom
+                html += `var canvas_bottom = document.getElementById('Blank_BOTTOM');`
+                html += `var ctx_bottom = canvas_bottom.getContext('2d');`
+
+                // canvas IMAGE
+                html += `var canvas_IMG = document.getElementById('viewingImage');`
+                html += `var ctx_IMG = canvas_IMG.getContext('2d');`
+                html += `var img = new Image();`
+                html += `img.src = '` + imgViewing + `';`
+                html += `ctx_IMG.drawImage(img, 0, 0, ` + screenWidth + `, ` + newImgHeight + `);`
+
+                html += `</script>`
+
+                // end HTML page
+                html += `</html>`
+
+                // send to applyScripts
+                applyScripts(html);
+
+                return (performance.now())
+            }
         };
 
-        // function to draw the moving screen
-        function drawMoving() {
-            // start moving timer only if no previous start time set
-            if (tStart_Moving == null) {
-                tStart_Moving = performance.now()
+        /**************************/
+        /**************************/
+        /***** Viewing  Phase *****/
+        /**************************/
+        /**************************/
+
+        var drawViewing = function () {
+            if (trial.verbose) {console.log('drawViewing'); console.log('state: ' + state.cState)}
+
+            // draw and record time
+            if (tStart_Viewing == undefined) { tStart_Viewing = draw(); };
+
+            // get the correct key response – 39 / Right arrow if tilting right
+            var keyAllowed = trialParams.isTiltingRight ? trial.key_increase : trial.key_decrease // 
+
+            // setup key listener
+            var keyListener_Viewing = jsPsych.pluginAPI.getKeyboardResponse({
+                callback_function: keyHandler_Viewing,
+                valid_responses: [trial.key_increase, trial.key_decrease],
+                rt_method: 'performance',
+                persist: true,
+                allow_held_key: false
+            })
+
+            // setup key handler
+            function keyHandler_Viewing(keyCode) {
+
+                // Correct Response
+                if (jsPsych.pluginAPI.compareKeys(keyCode.key, keyAllowed)) {
+                    // end viewing timer
+                    tEnd_Viewing = performance.now();
+
+                    // shift to next state
+                    state.nextState;
+
+                    // cancel keyboard listener
+                    jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Viewing)
+
+                    // shift line position (depends on tilt direction)
+                    trialParams.isTiltingRight ? linePos += trial.step_size : linePos -= trial.step_size;
+
+                    // draw moving (and return for callback)
+                    drawMoving(); return;
+                } else { // wrong key pressed (do nothing)
+                    return
+                }
             }
-            
-            var linePos_Degree = linePos + 90; // re-orient so that 90 degrees is up
-            var linePos_Rad = linePos_Degree * Math.PI / 180 // to radians
-            
-            html = `
-            <!DOCTYPE html>
-            <style type="text/css">
-                * {cursor: none;}
-            </style>
 
-            <html>
-                <style> 
-                    .stop-scrolling { 
-                        overflow: hidden; 
+            // draw the viewing screen
+            function draw() {
+
+                var viewingText = 'Now, please indicate the tipping point angle...'
+
+                // get HTML
+                html = `<!DOCTYPE html>`
+
+                /* Style ELEMENTS */
+                html += `<style>`
+                html += `*{ cursor: none; overflow: hidden; background-color:` + trial.background_color + `; };`
+                html += `</style>`
+
+                html += `<html>`
+
+                /* CANVAS ELEMENTS */
+                html += `<body>`
+                html += `<canvas id="Blank_TOP";    width = ` + screenWidth + `; height = ` + canvHeight_NoImage + `;></canvas>`
+                html += `<canvas id="viewingImage"; width = ` + screenWidth + `; height = ` + newImgHeight       + `;></canvas>`
+                html += `<canvas id="Blank_BOTTOM"; width = ` + screenWidth + `; height = ` + canvHeight_NoImage + `;></canvas>`
+                html += `</body>`
+
+                /* SCRIPT ELEMENTS */
+                html += `<script>`
+
+                // top canvas
+                html += `var canvas_top = document.getElementById('Blank_TOP');`
+                html += `var ctx_top = canvas_top.getContext('2d');`
+                html += `ctx_top.fillStyle = "black";`
+                html += `ctx_top.textAlign = "center";`
+                html += `ctx_top.font = "20px Arial";`
+                html += `ctx_top.fillText("` + viewingText + `", canvas_top.width / 2, canvas_top.height * 0.9);`
+
+                // canvas bottom requires no changes
+
+                // canvas IMAGE
+                html += `var canvas_IMG = document.getElementById('viewingImage');`
+                html += `var ctx_IMG = canvas_IMG.getContext('2d');`
+                html += `var img = new Image;`
+                html += `img.src = '` + imgViewing + `';`
+                html += `img.onload = function() { ctx_IMG.drawImage(img, 0, 0, ` + screenWidth + `, ` + newImgHeight + `); }`
+
+                html += `</script>`
+
+                // end HTML page
+                html += `</html>`
+
+                // send to applyScripts
+                applyScripts(html);
+
+
+                return (performance.now())
+            }
+        };
+
+
+        /**************************/
+        /**************************/
+        /***** Moving  Phase *****/
+        /**************************/
+        /**************************/
+        function drawMoving() {
+            if (trial.verbose) {console.log('drawMoving'); console.log('state: ' + state.cState)}
+            
+            // draw and record time
+            if (tStart_Moving == undefined) { tStart_Moving = draw() };
+
+            // setup key listener
+            var keyListener_Moving = jsPsych.pluginAPI.getKeyboardResponse({
+                callback_function: keyHandler_Moving,
+                valid_responses: [trial.key_increase, trial.key_decrease, trial.key_continue],
+                rt_method: 'performance',
+                persist: true,
+                allow_held_key: trial.allow_held_key,
+            })
+
+            // setup key handler
+            function keyHandler_Moving(keyCode) {
+                // key continue
+                if (jsPsych.pluginAPI.compareKeys(keyCode.key, trial.key_continue)) {
+
+                    // record time
+                    tEnd_Moving = performance.now();
+
+                    // clear screen
+                    display_element.innerHTML = '';
+
+                    // end key listener
+                    jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Moving);
+
+                    // end trial
+                    endTrial();
+
+                    return;
+                }
+
+                // key decrease
+                if (jsPsych.pluginAPI.compareKeys(keyCode.key, trial.key_decrease)) {
+
+                    // if tilting RIGHT, decrease key's left bound is > lineStart
+                    // if tilting LEFT, decrease key's left bound is > tilt_leftMax
+                    if ((trialParams.isTiltingRight && (linePos > lineStart)) || // tilt RIGHT
+                        (!trialParams.isTiltingRight && (linePos > tilt_leftMax))) { // tilt LEFT
+
+                        // increment line
+                        linePos -= trial.step_size;
+
+                        // draw (and return for callback)
+                        draw(); return;
+                    } else {
+                        return // do nothing if outside of bounds
                     } 
-                </style>
-                <body>
-                     <canvas id='Blank_TOP' onload='loadimage' class='stop-scrolling' width = ` + screenWidth + ` height= ` + canvHeight_NoImage + `></canvas>
-                     <canvas id='movingImage' class='stop-scrolling' width=` + screenWidth + ` height= ` + newImgHeight + `></canvas>
-                     <canvas id='Blank_BOTTOM' class='stop-scrolling' width = ` + screenWidth + ` height = ` + canvHeight_NoImage + `></canvas>
-                </body>
+                }
 
-                <script>                    
+                // key increase
+                if (jsPsych.pluginAPI.compareKeys(keyCode.key, trial.key_increase)) {
 
-                    // Dimensions and attributes For the TOP pannel
-                    var canvas_top = document.getElementById('Blank_TOP');
-                    var ctx_top = canvas_top.getContext('2d');
-                    ctx_top.fillStyle = "` + trial.background_color + `";
-                    ctx_top.fillRect(0, 0, canvas_top.width, canvas_top.height);
+                    // if tilting RIGHT, increase key's right bound is < tilt_rightMax
+                    // if tilting LEFT, increase key's right bound is < lineStart (0)
+
+                    if ((trialParams.isTiltingRight && (linePos < tilt_rightMax)) || // tilt RIGHT
+                        ((!trialParams.isTiltingRight && (linePos < lineStart)))) { // tilt LEFT
+
+                        // increment line
+                        linePos += trial.step_size;
+
+                        // draw (and return for callback)
+                        draw(); return;
+                    } else {
+                        return; // do nothing if outside of bounds
+                    }
+                }
+            }
+
+            // draw the moving screen
+            function draw() {
+                console.log('linePos / draw(): ' + linePos)
+
+                // get line Position in radians
+                var linePos_Degree = linePos + 90; // re-orient so that 90 degrees is up
+                var linePos_Rad = linePos_Degree * Math.PI / 180 // to radians
+
+                // get HTML
+                html = `<!DOCTYPE html>`
+
+                // styles
+                html += `<style type="text/css">`
+                html += `*{ cursor: none; overflow: hidden; background-color:` + trial.background_color + `; };`
+                html += `</style>`
+
+                // start body
+                html += `<html>`
+                html += `<body>`
+
+                // canvas elements
+                html += `<canvas id="Blank_TOP";    width = ` + screenWidth + `; height = ` + canvHeight_NoImage + `;></canvas>`
+                html += `<canvas id="movingImage"; width = ` + screenWidth + `; height = ` + newImgHeight       + `;></canvas>`
+                html += `<canvas id="Blank_BOTTOM"; width = ` + screenWidth + `; height = ` + canvHeight_NoImage + `;></canvas>`
+
+                // end body
+                html += `</body>`
+
+                // start scripts
+                html += `<script>`
+
+                // top canvas and bottom canvas require no changes
+
+                // image canvas
+                html += `var canvas_IMG = document.getElementById('movingImage');`
+                html += `var ctx_IMG = canvas_IMG.getContext('2d');`
+                html += `ctx_IMG.strokeStyle = '#000000';` // black line
+                html += `ctx_IMG.lineWidth = 2;`
+
+                // setup and draw image
+                html += `var img = new Image();`
+                html += `img.src = '` + imgMoving + `';`
+                html += `ctx_IMG.drawImage(img, 0, 0, ` + screenWidth + `, ` + newImgHeight + `);`
+
+                // setup line start and stop
+                html += `var lineAnchor = [canvas_IMG.width / 2, canvas_IMG.height / 2];` // center of the image is the anchor
+                html += `var lineLength = lineAnchor[1];` // line extends from anchor to the top of the image
+                html += `var lineEND_X = lineAnchor[0] - (Math.cos(` + linePos_Rad + `) * lineLength);`
+                html += `var lineEND_Y = lineAnchor[1] - (Math.sin(` + linePos_Rad + `) * lineLength);`
+
+                // draw line
+                html += `ctx_IMG.beginPath();`
+                html += `ctx_IMG.moveTo(lineAnchor[0], lineAnchor[1]);`
+                html += `ctx_IMG.lineTo(lineEND_X, lineEND_Y);`
+                html += `ctx_IMG.stroke();`
 
 
-                    // Dimensions and attributes of the BOTTOM pannel
-                    var canvas_bottom = document.getElementById('Blank_BOTTOM');
-                    var ctx_bottom = canvas_bottom.getContext('2d');
-                    ctx_bottom.fillStyle = "` + trial.background_color + `";
-                    ctx_bottom.fillRect(0, 0, canvas_bottom.width, canvas_bottom.height);
+                // end scripts
+                html += `</script>`
+
+                // end HTML page
+                html += `</html>`
+
+                // send to applyScripts
+                applyScripts(html);
 
 
-                    // Dimensions and attributes of the IMAGE pannel
-                    var canvas_IMG = document.getElementById('movingImage');
-                    var ctx_IMG = canvas_IMG.getContext('2d');
-                    ctx_IMG.strokeStyle = '#000000'; // black
-                    ctx_IMG.lineWidth = 2;
-
-
-                    // Get line start and stop
-                    
-                    var lineAnchor = [canvas_IMG.width / 2, canvas_IMG.height / 2]; // center of image is anchor
-                    var lineLength = lineAnchor[1]; // because line extends from anchor to top of image
-                    var lineEND_X = lineAnchor[0] - (Math.cos(` + linePos_Rad + `) * lineLength);
-                    var lineEND_Y = lineAnchor[1] - (Math.sin(` + linePos_Rad + `) * lineLength);
-
-                    
-                    // Create and show image
-                    var img = new Image();
-                    img.src = '` + imgMoving + `';
-
-                    // Draw Line
-                    ctx_IMG.drawImage(img, 0, 0, ` + screenWidth + `, ` + newImgHeight + `);
-                    ctx_IMG.beginPath();
-                    ctx_IMG.moveTo(lineAnchor[0], lineAnchor[1])
-                    ctx_IMG.lineTo(lineEND_X, lineEND_Y)
-                    ctx_IMG.stroke();
-
-                </script>
-
-            </html>
-            `;
-            applyScripts(html)
+                return (performance.now())
+            }
         }
-        
-        /*
-        When setting the html element using display_element.innerHTML, the scripts are not allowed to run. This function will curcumvent this (in an admittedly odd way) which will allow the scripts of the external html to run
-        */
+
+
+        drawHumanize();
+
+
+
+
+
+
+
+
+        /* When setting the html element using display_element.innerHTML, the scripts are not allowed to run. This function will curcumvent this (in an admittedly odd way) which will allow the scripts of the external html to run */
         function applyScripts(html) {
-            
+
             // load html to display_element
             display_element.innerHTML = html;
-            
+
             // get scripts and relocate to the proper script location
             for (const scriptElement of display_element.getElementsByTagName("script")) {
                 //console.log(scriptElement)
                 const relocatedScript = document.createElement("script");
                 relocatedScript.text = scriptElement.text;
                 scriptElement.parentNode.replaceChild(relocatedScript, scriptElement);
-                };
-            
+            };
+
             //console.log(display_element)
-            
+
             // helper to load via XMLHttpRequest
-            function load(element, file, callback){
+            function load(element, file, callback) {
                 console.log('used load function')
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.open("GET", file, true);
-                xmlhttp.onload = function(){
-                    if(xmlhttp.status == 200 || xmlhttp.status == 0){ //Check if loaded
+                xmlhttp.onload = function () {
+                    if (xmlhttp.status == 200 || xmlhttp.status == 0) { //Check if loaded
                         element.innerHTML = xmlhttp.responseText;
                         callback();
                     }
                 }
                 xmlhttp.send();
-              }
+            }
+            return;
         }
 
         function endTrial() {
-            if (verbose) {console.log('ended trial')}
+            if (trial.verbose) {
+                console.log('ended trial')
+            }
 
             // clear keyboard response
-            jsPsych.pluginAPI.cancelKeyboardResponse(key_listener);
+            jsPsych.pluginAPI.cancelAllKeyboardResponses();
 
             // save data
             var trial_data = {
@@ -388,6 +600,8 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
                 "TubeType": trialParams.TubeType,
                 "timeViewing": tEnd_Viewing - tStart_Viewing,
                 "timeMoving": tEnd_Moving - tStart_Moving,
+                "timeHumanize": tEnd_Humanize - tStart_Humanize,
+                "nHumanizeTrials": nHumanizeTrials,
                 "ViewingImage": imgViewing,
                 "MovingImage": imgMoving,
                 "isPractice": trial.isPractice,
@@ -398,6 +612,11 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function(){
             jsPsych.finishTrial(trial_data);
 
         };
+
+
+
+
+
     };
 
     return plugin;

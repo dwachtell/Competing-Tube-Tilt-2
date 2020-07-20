@@ -46,14 +46,31 @@
     var mainTrial_index = 0; // keeps track of the main trial number
     var screenWidth_Inches, screenHeight_Inches, screenDiagonal_Inches;
 
-
-
     // Focus Elements
     var fullscr_ON = 0; // var that tracks fullscreen activity
     var monitor_browser_interactions = false;
 
+    const timelineVariables = [
+        {viewing: "images/Viewing/CO_LEFT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {viewing: "images/Viewing/CO_LEFT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {viewing: "images/Viewing/CO_LEFT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {viewing: "images/Viewing/CO_LEFT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
 
+        {viewing: "images/Viewing/CO_RIGHT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {viewing: "images/Viewing/CO_RIGHT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {viewing: "images/Viewing/CO_RIGHT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {viewing: "images/Viewing/CO_RIGHT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
 
+        {viewing: "images/Viewing/OC_LEFT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {viewing: "images/Viewing/OC_LEFT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {viewing: "images/Viewing/OC_LEFT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {viewing: "images/Viewing/OC_LEFT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
+
+        {viewing: "images/Viewing/OC_RIGHT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {viewing: "images/Viewing/OC_RIGHT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {viewing: "images/Viewing/OC_RIGHT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {viewing: "images/Viewing/OC_RIGHT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
+    ];
 
     var imageFiles = [
 
@@ -117,12 +134,11 @@
     /*** Get Size of Screen ***/
     /**************************/
     /**************************/
-    // this resize plugin has been edited. DO NOT USE WITH A STANDARD PLUGIN.
     var creditCard_width = 3 + 3/8;
     var creditCard_height = 2 + 1/8;
 
     var ScreenDims = {
-        type: 'davis-resize',
+        type: 'davis-resize',   // this resize plugin has been edited. DO NOT USE WITH A STANDARD PLUGIN.
         item_width: creditCard_width, 
         item_height: creditCard_height, 
         starting_size: 400,
@@ -232,7 +248,14 @@
             return(true) // repeat checkInstructions
         }
     }
-    
+
+
+    /**************************/
+    /**************************/
+    /**** Practice  Trials ****/
+    /**************************/
+    /**************************/
+
 
     function TT_AttentionModulator_Stim(imagePath){
 
@@ -243,32 +266,40 @@
             width: img_Viewing.width,
             height: img_Viewing.height,
         }
-        
+
         // first get screen and image size
         const screenWidth = window.innerWidth // screen.availWidth;
         const screenHeight = window.innerHeight;// screen.availHeight
         var ratio = origImageDim.width / screenWidth;
-        var newImgHeight = Math.round(origI mageDim.height / ratio);
+        var newImgHeight = Math.round(origImageDim.height / ratio);
         var canvHeight_NoImage = Math.floor((screenHeight - newImgHeight) / 2);
         var question = 'Does Davis see the left or right side of the tube? (Indicate using the arrows)'
-        
-        
-        html = `<!DOCTYPE html><html><body>`
-    html += `<div id='Blank_TOP' width=` + screenWidth + ` height= ` + canvHeight_NoImage + `> <p>` + question + `</p></div>` 
-        html += `<div id="viewingImage" width='` + screenWidth + `' height= '` + newImgHeight + `'>
-                 <img src='` + imagePath + `' width='` + screenWidth + `' height= '` + newImgHeight + `'></div>`
-        html += `<div id='Blank_BOTTOM' width = ` + screenWidth + ` height = ` + canvHeight_NoImage + `></div>`
-        html += `</body></html>`
-        return(html)
 
+
+        html = `<!DOCTYPE html><html><body>`
+        html += `<style> .thisText{vertical-align: "middle"}</style>`
+
+        // Division TOP (with question)
+        html += `<div style = "vertical-align: middle id='Blank_TOP' width=` + screenWidth + ` height= ` + canvHeight_NoImage + `>`
+        html += `<p class = "thisText">` + question + `</p>`
+        html += `</div>`
+
+        // Division Middle (with image)
+        html += `<div id="viewingImage" width='` + screenWidth + `' height= '` + newImgHeight + `'>`
+        html += `<img src='` + imagePath + `' width='` + screenWidth + `' height= '` + newImgHeight + `'>`
+        html += `</div>`
+
+        // Division Bottom (blank)
+        html += `<div id='Blank_BOTTOM' width = ` + screenWidth + ` height = ` + canvHeight_NoImage + `>`
+        html += `<p></p>`
+        html += `</div>`
+
+        // end html page
+        html += `</body></html>`
+
+        return(html)
     }
 
-
-    /**************************/
-    /**************************/
-    /**** Practice  Trials ****/
-    /**************************/
-    /**************************/
 
     var TT_Practice_AttentionModulator = {
         type: 'html-keyboard-response',
@@ -298,6 +329,8 @@
         img_Moving: function(){
             return(jsPsych.timelineVariable('moving', true))
         },
+        verbose: true,
+        attention_controller: true,
         step_size: stepSize,
         isPractice: true,
         allow_held_key: true,
@@ -311,7 +344,8 @@
     }
 
     var practiceTrialBlock = {
-        timeline: [TT_Practice_AttentionModulator, TubeTilt_PracticeTrials],
+        timeline: [//TT_Practice_AttentionModulator,
+            TubeTilt_PracticeTrials],
         randomize_order: true,
         repetitions: 1,
         background_color: "#D3D3D3",
@@ -320,27 +354,7 @@
             type: 'without-replacement',
             size: nPracticeTrials,
         },
-        timeline_variables: [
-            {viewing: "images/Viewing/CO_LEFT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_LEFT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_LEFT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_LEFT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
-
-            {viewing: "images/Viewing/CO_RIGHT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_RIGHT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_RIGHT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_RIGHT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
-
-            {viewing: "images/Viewing/OC_LEFT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_LEFT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_LEFT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_LEFT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
-
-            {viewing: "images/Viewing/OC_RIGHT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_RIGHT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_RIGHT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_RIGHT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
-        ],
+        timeline_variables: timelineVariables,
     }
 
 
@@ -415,27 +429,7 @@
             type: 'without-replacement',
             size: 16 // 16 is all the trials
         },
-        timeline_variables: [
-            {viewing: "images/Viewing/CO_LEFT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_LEFT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_LEFT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_LEFT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
-
-            {viewing: "images/Viewing/CO_RIGHT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_RIGHT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_RIGHT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-            {viewing: "images/Viewing/CO_RIGHT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
-
-            {viewing: "images/Viewing/OC_LEFT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_LEFT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_LEFT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_LEFT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
-
-            {viewing: "images/Viewing/OC_RIGHT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_RIGHT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_RIGHT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-            {viewing: "images/Viewing/OC_RIGHT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
-        ],
+        timeline_variables: timelineVariables,
     }
 
 
