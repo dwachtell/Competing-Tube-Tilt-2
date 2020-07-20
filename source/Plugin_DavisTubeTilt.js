@@ -30,6 +30,12 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         name: 'DavisTubeTilt',
         description: 'Will run the moving phase of a tube tilt trial, with parameters specified',
         parameters: {
+            img_Humanize: {
+                type: jsPsych.plugins.parameterType.STRING,
+                pretty_name: "Humanize Phase Image",
+                default: null,
+                desription: 'The desired image to be centered and shown during the Humanize Phase'
+            },
             img_Viewing: {
                 type: jsPsych.plugins.parameterType.STRING,
                 pretty_name: "Viewing Phase Image",
@@ -145,6 +151,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         // image path and parameters
         const imgViewing = trial.img_Viewing; // the image for the Viewing Screen
         const imgMoving = trial.img_Moving; // the image for the Moving Screen
+        const imgHumanize = trial.img_Humanize; // the image for the Humanize Screen
         var tp = imgViewing.split("/")[2].split("_");
         var trialParams = { // the numeric index details are based on the file names
             FaceType: tp[0], // OC or CO
@@ -198,7 +205,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                 persist: true,
                 allow_held_key: false
             })
-            
+
             // initilize timeout timer to be greater than timeout period (if no wrong answers, allows to continue immediately)
             var timeoutTimer;
 
@@ -206,23 +213,23 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
             function keyHandler_Humanize(keyCode) {
                 // find out if correct key was pressed
                 if (jsPsych.pluginAPI.compareKeys(keyCode.key, keyCorrect)) {
-                    
+
                     // if timout timer is undefined ==> no missed trial, continue
                     // if timeout timer is defined ==> missed trial, ensure time since answer is greater than timeout
                     if( (timeoutTimer == undefined) || (performance.now() - timeoutTimer > humanize_errorDelay)){
-                    
 
-                    // record end time
-                    tEnd_Humanize = performance.now();
 
-                    // cancel keyboard listener
-                    jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Humanize)
-                    
-                    // shift states
-                    state.nextState;
-                    
-                    // draw the viewing phase (and return for callback)
-                    drawViewing(); return;
+                        // record end time
+                        tEnd_Humanize = performance.now();
+
+                        // cancel keyboard listener
+                        jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Humanize)
+
+                        // shift states
+                        state.nextState;
+
+                        // draw the viewing phase (and return for callback)
+                        drawViewing(); return;
                     }
                 } else {
                     timeoutTimer = performance.now();
@@ -235,7 +242,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
             function draw() {
                 // increment number of humanize trials
                 nHumanizeTrials ++;
-                
+
                 // question shown on screen
                 var question = 'Does Davis see the left or right side of the tube? (Indicate using the arrows)'
 
@@ -274,7 +281,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                 html += `var canvas_IMG = document.getElementById('viewingImage');`
                 html += `var ctx_IMG = canvas_IMG.getContext('2d');`
                 html += `var img = new Image();`
-                html += `img.src = '` + imgViewing + `';`
+                html += `img.src = '` + imgHumanize + `';`
                 html += `ctx_IMG.drawImage(img, 0, 0, ` + screenWidth + `, ` + newImgHeight + `);`
 
                 html += `</script>`
@@ -400,7 +407,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         /**************************/
         function drawMoving() {
             if (trial.verbose) {console.log('drawMoving'); console.log('state: ' + state.cState)}
-            
+
             // draw and record time
             if (tStart_Moving == undefined) { tStart_Moving = draw() };
 

@@ -51,25 +51,25 @@
     var monitor_browser_interactions = false;
 
     const timelineVariables = [
-        {viewing: "images/Viewing/CO_LEFT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-        {viewing: "images/Viewing/CO_LEFT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
-        {viewing: "images/Viewing/CO_LEFT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-        {viewing: "images/Viewing/CO_LEFT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {humanize: "images/Humanize/CO_SF.jpg", viewing: "images/Viewing/CO_LEFT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {humanize: "images/Humanize/CO_ST.jpg", viewing: "images/Viewing/CO_LEFT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {humanize: "images/Humanize/CO_TF.jpg", viewing: "images/Viewing/CO_LEFT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {humanize: "images/Humanize/CO_TT.jpg", viewing: "images/Viewing/CO_LEFT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
 
-        {viewing: "images/Viewing/CO_RIGHT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-        {viewing: "images/Viewing/CO_RIGHT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
-        {viewing: "images/Viewing/CO_RIGHT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
-        {viewing: "images/Viewing/CO_RIGHT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {humanize: "images/Humanize/CO_SF.jpg", viewing: "images/Viewing/CO_RIGHT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {humanize: "images/Humanize/CO_ST.jpg", viewing: "images/Viewing/CO_RIGHT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {humanize: "images/Humanize/CO_TF.jpg", viewing: "images/Viewing/CO_RIGHT_TF.jpg", moving: "images/Moving/Closed_Open.jpg"},
+        {humanize: "images/Humanize/CO_TT.jpg", viewing: "images/Viewing/CO_RIGHT_TT.jpg", moving: "images/Moving/Closed_Open.jpg"},
 
-        {viewing: "images/Viewing/OC_LEFT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-        {viewing: "images/Viewing/OC_LEFT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
-        {viewing: "images/Viewing/OC_LEFT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-        {viewing: "images/Viewing/OC_LEFT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {humanize: "images/Humanize/OC_SF.jpg", viewing: "images/Viewing/OC_LEFT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {humanize: "images/Humanize/OC_ST.jpg", viewing: "images/Viewing/OC_LEFT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {humanize: "images/Humanize/OC_TF.jpg", viewing: "images/Viewing/OC_LEFT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {humanize: "images/Humanize/OC_TT.jpg", viewing: "images/Viewing/OC_LEFT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
 
-        {viewing: "images/Viewing/OC_RIGHT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-        {viewing: "images/Viewing/OC_RIGHT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
-        {viewing: "images/Viewing/OC_RIGHT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
-        {viewing: "images/Viewing/OC_RIGHT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {humanize: "images/Humanize/OC_SF.jpg", viewing: "images/Viewing/OC_RIGHT_SF.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {humanize: "images/Humanize/OC_ST.jpg", viewing: "images/Viewing/OC_RIGHT_ST.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {humanize: "images/Humanize/OC_TF.jpg", viewing: "images/Viewing/OC_RIGHT_TF.jpg", moving: "images/Moving/Open_Closed.jpg"},
+        {humanize: "images/Humanize/OC_TT.jpg", viewing: "images/Viewing/OC_RIGHT_TT.jpg", moving: "images/Moving/Open_Closed.jpg"},
     ];
 
     var imageFiles = [
@@ -98,7 +98,17 @@
         // Images for moving phase
         "images/Moving/Closed_Open.jpg",
         "images/Moving/Open_Closed.jpg",
-
+        
+        // images for humanize phase
+        "images/Humanize/CO_SF.jpg",
+        "images/Humanize/CO_ST.jpg",
+        "images/Humanize/CO_TF.jpg",
+        "images/Humanize/CO_TT.jpg",
+        
+        "images/Humanize/OC_SF.jpg",
+        "images/Humanize/OC_ST.jpg",
+        "images/Humanize/OC_TF.jpg",
+        "images/Humanize/OC_TT.jpg",
 
         // Images for instructions
         "images/Instructions/intro1.png",
@@ -111,6 +121,7 @@
         "images/Instructions/intro8.png",
 
     ];
+
 
     /**************************/
     /**************************/
@@ -256,73 +267,11 @@
     /**************************/
     /**************************/
 
-
-    function TT_AttentionModulator_Stim(imagePath){
-
-        // get image for original image size
-        var img_Viewing = new Image();
-        img_Viewing.src = imagePath;
-        const origImageDim = { // get real image size
-            width: img_Viewing.width,
-            height: img_Viewing.height,
-        }
-
-        // first get screen and image size
-        const screenWidth = window.innerWidth // screen.availWidth;
-        const screenHeight = window.innerHeight;// screen.availHeight
-        var ratio = origImageDim.width / screenWidth;
-        var newImgHeight = Math.round(origImageDim.height / ratio);
-        var canvHeight_NoImage = Math.floor((screenHeight - newImgHeight) / 2);
-        var question = 'Does Davis see the left or right side of the tube? (Indicate using the arrows)'
-
-
-        html = `<!DOCTYPE html><html><body>`
-        html += `<style> .thisText{vertical-align: "middle"}</style>`
-
-        // Division TOP (with question)
-        html += `<div style = "vertical-align: middle id='Blank_TOP' width=` + screenWidth + ` height= ` + canvHeight_NoImage + `>`
-        html += `<p class = "thisText">` + question + `</p>`
-        html += `</div>`
-
-        // Division Middle (with image)
-        html += `<div id="viewingImage" width='` + screenWidth + `' height= '` + newImgHeight + `'>`
-        html += `<img src='` + imagePath + `' width='` + screenWidth + `' height= '` + newImgHeight + `'>`
-        html += `</div>`
-
-        // Division Bottom (blank)
-        html += `<div id='Blank_BOTTOM' width = ` + screenWidth + ` height = ` + canvHeight_NoImage + `>`
-        html += `<p></p>`
-        html += `</div>`
-
-        // end html page
-        html += `</body></html>`
-
-        return(html)
-    }
-
-
-    var TT_Practice_AttentionModulator = {
-        type: 'html-keyboard-response',
-        stimulus: function(){
-            return(TT_AttentionModulator_Stim(jsPsych.timelineVariable('viewing', true)))
-        },
-        choices: [37, 39],
-        response_ends_trial: true,
-        loop_function: function() {
-            // get correct answer
-            var trialParams = imagePath.split("/")[2].split("_");
-            var trialParams = { // the numeric details are based on the file names
-                "FaceType": trialParams[0],
-                "TiltDirection": trialParams[1],
-            }
-            return(false)
-        }
-
-    }
-
-
     var TubeTilt_PracticeTrials = {
         type:'Davis-Tube-Tilt',
+        img_Humanize: function() {
+            return(jsPsych.timelineVariable('humanize', true))
+        },
         img_Viewing: function() {
             return(jsPsych.timelineVariable('viewing', true))
         },
@@ -344,8 +293,7 @@
     }
 
     var practiceTrialBlock = {
-        timeline: [//TT_Practice_AttentionModulator,
-            TubeTilt_PracticeTrials],
+        timeline: [TubeTilt_PracticeTrials],
         randomize_order: true,
         repetitions: 1,
         background_color: "#D3D3D3",
@@ -366,6 +314,9 @@
 
     var TubeTilt_MainTrials = {
         type:'Davis-Tube-Tilt',
+        img_Humanize: function() {
+            return(jsPsych.timelineVariable('humanize', true))
+        },
         img_Viewing: function() {
             return(jsPsych.timelineVariable('viewing', true))
         },
