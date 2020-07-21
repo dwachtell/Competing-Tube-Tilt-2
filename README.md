@@ -4,7 +4,7 @@ The third iteration of the competing tube tilt experiment. The first was in the 
 A online version of the Competing Tube Tilt Experiment.
 The original experiment, performed in MATLAB needs to be brought online during these COVID times. So this program will do that.
 
-The major difference between this and the OnlineCompetingTubeTilt is that the experiemnt emphazises the characters on the screeen by asking what direction 'Davis' is looking at
+The major difference between this and the OnlineCompetingTubeTilt is that the experiemnt emphazises the characters on the screeen by asking what direction 'Will' is looking at
 
 Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 
