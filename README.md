@@ -41,7 +41,7 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 - `data/respMats/` contains the csv response matricies for each subject
 
 ## [`/Docs/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/docs)
-- Contains the pdf consent form that are available during the experiment
+- Contains the pdf consent form that is available during the experiment
 
 ## `write_data.php`
  - Allows for the data to be saved to the server
