@@ -35,11 +35,11 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 
 ## [`/Data/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data)
 - Contains the directory for the data files.
-- `data/pInfo` contains the participant information recorded from each experiment
+- [`data/pInfo`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/pInfo) contains the participant information recorded from each experiment
     * Filename = 'pInfo_TubeTilt'_Year-Month-Day-Hour-Minute-TimeZoneOffset-UniqueID
-- `data/raw` contains the raw csv output from each experiment
-- `data/respMats/` contains the csv response matricies for each subject
--  `data/settings/` contains a json file which contains the timeline for the experiment. Not intended for data analysis, ultimately only for use during final steps of analysis to confirm that each subject performed the same experiment. 
+- [`data/raw`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/raw) contains the raw csv output from each experiment
+- [`data/respMats/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/respMats) contains the csv response matricies for each subject
+-  [`data/settings/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/settings) contains a json file which contains the timeline for the experiment. Not intended for data analysis, ultimately only for use during final steps of analysis to confirm that each subject performed the same experiment. 
 
 ## [`/Docs/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/docs)
 - Contains the pdf consent form that is available during the experiment
