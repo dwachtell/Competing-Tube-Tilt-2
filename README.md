@@ -39,6 +39,7 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
     * Filename = 'pInfo_TubeTilt'_Year-Month-Day-Hour-Minute-TimeZoneOffset-UniqueID
 - `data/raw` contains the raw csv output from each experiment
 - `data/respMats/` contains the csv response matricies for each subject
+-  `data/settings/` contains a json file which contains the timeline for the experiment. Not intended for data analysis, ultimately only for use during final steps of analysis to confirm that each subject performed the same experiment. 
 
 ## [`/Docs/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/docs)
 - Contains the pdf consent form that is available during the experiment
