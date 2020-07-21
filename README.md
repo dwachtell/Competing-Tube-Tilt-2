@@ -14,7 +14,7 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 ## `Analyze_OnlineTubeTilt.rmd` 
 - A analysis script which imports and analyzes the tube tilt trial data for each participant
 
-## `/source/`
+## [`/source/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/source)
 - Contains important scripts for the experiment to work
 - `ExperimentSurveys.js` is the variables that record the pre- and post-experiment surveys
 - `Plugin_DavisTubeTilt.js` is the jsPsych plugin that performs the tube tilt experiment
