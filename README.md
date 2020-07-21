@@ -23,9 +23,11 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 
 ## [`/images/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images)
 - Contains the images needed to run the experiment
-- Viewing ==> images for the viewing phase
+- ['/Humanize/'](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Humanize/) ==> images for the humanize phase
+    - In format `FaceType_TubeType`.jpg
+- [Viewing](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Viewing/) ==> images for the viewing phase
     - In format `FaceType_ArrowDirection_TubeType`.jpg
-- Moving ==> images for the moving phase
+- ['/Moving/'](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Moving/) ==> images for the moving phase
    - In format `FaceType_ArrowDirection`.jpg
 - The filename is vital to the experiment, so if pictures are changed make sure to maintain the format of the filename (or change the code)
 
@@ -35,9 +37,9 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 
 ## [`/Data/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data)
 - Contains the directory for the data files.
-- [`data/pInfo`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/pInfo) contains the participant information recorded from each experiment
+- [`data/pInfo/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/pInfo) contains the participant information recorded from each experiment
     * Filename = 'pInfo_TubeTilt'_Year-Month-Day-Hour-Minute-TimeZoneOffset-UniqueID
-- [`data/raw`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/raw) contains the raw csv output from each experiment
+- [`data/raw/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/raw) contains the raw csv output from each experiment
 - [`data/respMats/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/respMats) contains the csv response matricies for each subject
 -  [`data/settings/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/settings) contains a json file which contains the timeline for the experiment. Not intended for data analysis, ultimately only for use during final steps of analysis to confirm that each subject performed the same experiment. 
 
