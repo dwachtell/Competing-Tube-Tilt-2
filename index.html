@@ -1,32 +1,30 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="jspsych/jspsych.js"></script>
-        <script src="jspsych/plugins/jspsych-html-keyboard-response.js"></script>
-        <script src="jspsych/plugins/jspsych-fullscreen.js"></script>
-        <script src="jspsych/plugins/jspsych-survey-multi-choice.js"></script>
-        <script src="jspsych/plugins/jspsych-survey-multi-select.js"></script>
-        <script src="jspsych/plugins/jspsych-survey-text.js"></script>
-        <script src="jspsych/plugins/jspsych-survey-html-form.js"></script>
-        <script src="jspsych/plugins/jspsych-instructions.js"></script>
-
-        <script src="source/ExperimentSurveys.js"></script>
-        <script src="source/gatherParticipantInfo.js"></script>
-        <script src="source/Plugin_DavisTubeTilt.js"></script>
-        <script src="source/davis-resize.js"></script>
-
-        <link rel="stylesheet" href="jspsych/css/jspsych.css"></link>
-
+        <title>Online Tube Tilt 2</title>
+        <meta charset="UTF-8">
     </head>
-<body> </body>
+
+
+    <script src="jspsych/jspsych.js"></script>
+    <script src="jspsych/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych/plugins/jspsych-fullscreen.js"></script>
+    <script src="jspsych/plugins/jspsych-survey-multi-choice.js"></script>
+    <script src="jspsych/plugins/jspsych-survey-multi-select.js"></script>
+    <script src="jspsych/plugins/jspsych-survey-text.js"></script>
+    <script src="jspsych/plugins/jspsych-survey-html-form.js"></script>
+    <script src="jspsych/plugins/jspsych-instructions.js"></script>
+
+    <script src="source/ExperimentSurveys.js"></script>
+    <script src="source/gatherParticipantInfo.js"></script>
+    <script src="source/Plugin_DavisTubeTilt.js"></script>
+    <script src="source/davis-resize.js"></script>
+
+    <link rel="stylesheet" href="jspsych/css/jspsych.css"></link>
+
+<body></body>
 <script>
 
-
-    /* 
-
-    ** THINGS TO DO **
-    - Prolific and Payment stuff was mostly copied and pasted, make sure it works for a new experiment (is the link at the end right?)
-    */
 
     /**************************/
     /**************************/
@@ -75,51 +73,23 @@
     var imageFiles = [
 
         // images for Viewing Phase
-        "images/Viewing/CO_LEFT_SF.jpg", // Closed-Open _ Left-Arrow _ Short-Fat
-        "images/Viewing/CO_LEFT_ST.jpg", 
-        "images/Viewing/CO_LEFT_TF.jpg", 
-        "images/Viewing/CO_LEFT_TT.jpg", 
-
-        "images/Viewing/CO_RIGHT_SF.jpg", 
-        "images/Viewing/CO_RIGHT_ST.jpg", // Closed-Open _ Right-Arrow _ Short-Thin
-        "images/Viewing/CO_RIGHT_TF.jpg",
-        "images/Viewing/CO_RIGHT_TT.jpg",
-
-        "images/Viewing/OC_LEFT_SF.jpg", 
-        "images/Viewing/OC_LEFT_ST.jpg",
-        "images/Viewing/OC_LEFT_TF.jpg", // Open-Closed _ Arrow-Left _ Tall_Fat
-        "images/Viewing/OC_LEFT_TT.jpg",
-
-        "images/Viewing/OC_RIGHT_SF.jpg",
-        "images/Viewing/OC_RIGHT_ST.jpg",
-        "images/Viewing/OC_RIGHT_TF.jpg",
-        "images/Viewing/OC_RIGHT_TT.jpg", // Open-Closed _ Arrow-Right _ Tall_Thin
+        "images/Viewing/CO_LEFT_SF.jpg", "images/Viewing/CO_LEFT_ST.jpg", "images/Viewing/CO_LEFT_TF.jpg", "images/Viewing/CO_LEFT_TT.jpg", 
+        "images/Viewing/OC_LEFT_SF.jpg", "images/Viewing/OC_LEFT_ST.jpg", "images/Viewing/OC_LEFT_TF.jpg", "images/Viewing/OC_LEFT_TT.jpg",
+        
+        "images/Viewing/CO_RIGHT_SF.jpg", "images/Viewing/CO_RIGHT_ST.jpg", "images/Viewing/CO_RIGHT_TF.jpg", "images/Viewing/CO_RIGHT_TT.jpg",
+        "images/Viewing/OC_RIGHT_SF.jpg", "images/Viewing/OC_RIGHT_ST.jpg", "images/Viewing/OC_RIGHT_TF.jpg", "images/Viewing/OC_RIGHT_TT.jpg", 
 
         // Images for moving phase
-        "images/Moving/Closed_Open.jpg",
-        "images/Moving/Open_Closed.jpg",
-        
+        "images/Moving/Closed_Open.jpg", "images/Moving/Open_Closed.jpg",
+
         // images for humanize phase
-        "images/Humanize/CO_SF.jpg",
-        "images/Humanize/CO_ST.jpg",
-        "images/Humanize/CO_TF.jpg",
-        "images/Humanize/CO_TT.jpg",
-        
-        "images/Humanize/OC_SF.jpg",
-        "images/Humanize/OC_ST.jpg",
-        "images/Humanize/OC_TF.jpg",
-        "images/Humanize/OC_TT.jpg",
+        "images/Humanize/CO_SF.jpg", "images/Humanize/CO_ST.jpg", "images/Humanize/CO_TF.jpg", "images/Humanize/CO_TT.jpg",
+        "images/Humanize/OC_SF.jpg", "images/Humanize/OC_ST.jpg", "images/Humanize/OC_TF.jpg", "images/Humanize/OC_TT.jpg",
 
         // Images for instructions
-        "images/Instructions/intro1.png",
-        "images/Instructions/intro2.png",
-        "images/Instructions/intro3.png",
-        "images/Instructions/intro4.png",
-        "images/Instructions/intro5.png",
-        "images/Instructions/intro6.png",
-        "images/Instructions/intro7.png",
-        "images/Instructions/intro8.png",
-
+        "images/Instructions/intro1.png", "images/Instructions/intro2.png", "images/Instructions/intro3.png", "images/Instructions/intro4.png",
+        "images/Instructions/intro5.png", "images/Instructions/intro6.png", "images/Instructions/intro7.png", "images/Instructions/intro8.png",
+        "images/Instructions/intro9.png"
     ];
 
 
@@ -162,10 +132,10 @@
     /****** Instructions ******/
     /**************************/
     /**************************/
-    var instructions_string = [
-        `<div style="max-width:600px";><p>Welcome!<p></p>Please read the step-by-step instructions carefully. You can use the arrow keys, or the buttons below, to navigate.</p>`,
+var instructions_string = [
+        `<div style="max-width:600px";><p>Welcome!<p></p>Please read the step-by-step instructions carefully. You can use the arrow keys, or the buttons below, to navigate.</p></div>`,
 
-        `<div style="max-width:600px";><p>On each trial, you will see a screen similar to the screen below. The white rectangle represents a standard sheet of paper that's been rolled into a tube, taped closed, and set upright on a flat table.</p><p><img src="images/Instructions/intro1.png" width="650"></p></div>`,
+        `<div style="max-width:600px";><p>On each trial, you will see a screen similar to the screen below. The white rectangle represents a standard sheet of paper that's been rolled into a tube, taped closed, and set upright on a flat table.</p><p><img src="images/Instructions/intro1.png" width="495"></p></div>`,
 
         `<div style="max-width:600px";><p>Your task is to find the <b>tipping point</b> for the paper tube. The tipping point is the theoretical <i>angle where tipping the tube any further and letting go would cause the tube to fall on its side</i>.</p><p><img src="images/Instructions/intro2.png" width="650"><br>If you are among the top 50% participants in terms of finding the correct tipping point angles, you will receive a <b>50% bonus</b> pay.</p></div>`,
 
@@ -177,15 +147,17 @@
 
         `<div style="max-width:600px";><p>The size and shape of the tube will differ from trial to trial. Keep in mind that different tubes have different tipping points.</p><p><img src="images/Instructions/intro6.png" width="650"></p></div>`,
 
-        `<div style="max-width:600px";><p>Additionally, on each trial, the identical twins Will and Davis are also going to be on the screen, facing the tube. One of them will be staring at the tube, while the other one is blindfolded (and doesn't see anything). Will and Davis are irrelevant to your task, but we might ask questions about them after the experiment.</p><p><img src="images/Instructions/intro7.png" width="650"></p></div>`,
+        `<div style="max-width:600px";><p>Additionally, on each trial, the identical twins Will and Davis are also going to be on the screen, facing the tube. One of them will be staring at the tube, while the other one is blindfolded (and doesn't see anything). You will be asked questions about Will and Davis throughout the experiment. </p><p><img src="images/Instructions/intro7.png" width="650"></p></div>`,
+    
+        `<div style="max-width:600px";><p>On each trial, you will also be asked to identify which side of the tube Will is able to see. Think about what Will would be able to see given his placement to the tube. <u>Remember that Will is always the sighted face.</u></p><p><img src="images/Instructions/intro8.png" width="650"></p></div>`,
 
-        `<div style="max-width:600px";><p>You're now ready for a couple of practice trials!<p>Press the "next" to continue.</p><p><img src="images/Instructions/intro8.png" width="650"></p></div>`
+        `<div style="max-width:600px";><p>You're now ready for a couple of practice trials!<p>Press the "next" to continue.</p><p><img src="images/Instructions/intro9.png" width="650"></p></div>`
     ];
 
     var instructions = {
         type: 'instructions',
         // kinda complicated, but easy way to number sections of the instructions. If you want to edit the instructions, edit the instructions_string above
-        pages: [...Array(instructions_string.length).keys()].map(x => `<font size='+1'> <b> <u> Instructions (please read carefully) (` + (x + 1) + ` / ` + (instructions_string.length) + `) </b></u></font><div width='` + window.screenWidth / 3 + `'>` + instructions_string[x]),
+        pages: [...Array(instructions_string.length).keys()].map(x => `<font size='+1'> <b> <u> Instructions (please read carefully) (` + (x + 1) + ` / ` + (instructions_string.length) + `) </b></u></font>` + instructions_string[x]),
         show_clickable_nav: true,
     }
 
@@ -278,7 +250,7 @@
         img_Moving: function(){
             return(jsPsych.timelineVariable('moving', true))
         },
-        verbose: true,
+        verbose: false,
         attention_controller: true,
         step_size: stepSize,
         isPractice: true,
@@ -391,6 +363,7 @@
     /**************************/
 
     function saveData(name, data){
+
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'write_data.php'); // 'write_data.php' is the path to the php file described above.
         xhr.setRequestHeader('Content-Type', 'application/json');
@@ -411,7 +384,6 @@
         }
         return(csv)
     }
-
     var DataSave = {
         type: 'html-keyboard-response',
         stimulus: '<p><div style="max-width:600px;">You have completed the experiment. Continue to the next page by pressing "c" to get the link directing you to the Prolific link for your reward.</p></div>',
@@ -501,19 +473,19 @@
 
     jsPsych.init({
         timeline: [
-            //            pre_exp_survey_block, // Pre Experiment Survey Block
-            //            go_fullscreen,  // Go Fullscreen
-            //            ScreenDims, // Get the Screen Dims with comparison to credit card
-            //            instructions, // Show instructions
-            //            checkInstructions_Loop, // Make sure instructions are understood
+            pre_exp_survey_block, // Pre Experiment Survey Block
+            go_fullscreen,  // Go Fullscreen
+            ScreenDims, // Get the Screen Dims with comparison to credit card
+            instructions, // Show instructions
+            checkInstructions_Loop, // Make sure instructions are understood
             practiceStartScreen, // Start the practice trials
             practiceTrialBlock, // Do the practice Trials
-            //            mainStartScreen, // Start the main trials
-            //            mainTrialBlock, // Do the main trials
-            //            post_exp_survey_block, // Post Experiment Survey Block
-            //            DataSave, // Save the data
-            //            go_off_fullscreen, // Go off fullscreen
-            //            end_experiment // end the experiment with prolific link
+            mainStartScreen, // Start the main trials
+            mainTrialBlock, // Do the main trials
+            post_exp_survey_block, // Post Experiment Survey Block
+            DataSave, // Save the data
+            go_off_fullscreen, // Go off fullscreen
+            end_experiment // end the experiment with prolific link
         ],
         show_preload_progress_bar: true,
         use_webaudio: false,
@@ -524,8 +496,9 @@
             if(monitor_browser_interactions){
                 if (interaction == "fullscreenexit" || interaction == "blur"){
                     fullscr_ON = 0;
-                    document.querySelector('head').insertAdjacentHTML('beforeend', '<style></style>');
-                    jsPsych.endExperiment("Fullscreen mode disabled! Study aborted. Sorry about that! If you'd like to restart the experiment, reload entire page.");
+                    fullscreenExitError = `<div style="max-width:600px;">Fullscreen mode disabled! Study aborted. Sorry about that! If you'd like to restart the experiment, reload entire page.</div>`
+
+                    jsPsych.endExperiment(fullscreenExitError);
                 }
             }
         },

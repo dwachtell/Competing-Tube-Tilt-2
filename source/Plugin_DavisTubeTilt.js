@@ -128,10 +128,11 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
             state_indx: 0,
             get cState() { return (states[this.state_indx]) }, // returns current state as a string
             get nextState() { if (this.state_indx < states.length) { this.state_indx++ } }, // increments the state 
+
+            // these will return true if the trial is in that state
             get isHumanize() {return (states[this.state_indx] == "Humanize") },
             get isViewing() { return (states[this.state_indx] == "Viewing") },
             get isMoving() { return (states[this.state_indx] == "Moving") },
-
         }
 
         /**************************/
@@ -149,9 +150,9 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         }
 
         // image path and parameters
-        const imgViewing = trial.img_Viewing; // the image for the Viewing Screen
-        const imgMoving = trial.img_Moving; // the image for the Moving Screen
-        const imgHumanize = trial.img_Humanize; // the image for the Humanize Screen
+        const imgViewing = trial.img_Viewing; // the image path for the Viewing Screen
+        const imgMoving = trial.img_Moving; // the image path for the Moving Screen
+        const imgHumanize = trial.img_Humanize; // the image path for the Humanize Screen
         var tp = imgViewing.split("/")[2].split("_");
         var trialParams = { // the numeric index details are based on the file names
             FaceType: tp[0], // OC or CO
@@ -184,14 +185,11 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         /**************************/
         /**************************/
         var drawHumanize = function () {
-            if (!state.isHumanize) {alert('Not in Humanizing State'); return }
-
-            console.log('drawHumanize')
-            console.log('state: ' + state.cState)
-            if (!state.isHumanize) {return}
+            if (trial.verbose) {console.log('drawHumanize'); console.log('state: ' + state.cState)};
+            if (!state.isHumanize) {endTrial()}; // stop if in wrong state (things got messed up)
 
             // start timer if not started
-            if (tStart_Humanize == undefined) { tStart_Humanize = draw(); };
+            if (tStart_Humanize == undefined) { tStart_Humanize = draw() };
 
             // find correct key
             var keyCorrect = (trialParams.FaceType == "OC") ? trial.key_decrease : trial.key_increase
@@ -206,7 +204,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                 allow_held_key: false
             })
 
-            // initilize timeout timer to be greater than timeout period (if no wrong answers, allows to continue immediately)
+            // initilize timeout timer. Without this the button presses are still valid during the timeout
             var timeoutTimer;
 
             // setup key handler
@@ -218,22 +216,21 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                     // if timeout timer is defined ==> missed trial, ensure time since answer is greater than timeout
                     if( (timeoutTimer == undefined) || (performance.now() - timeoutTimer > humanize_errorDelay)){
 
-
                         // record end time
                         tEnd_Humanize = performance.now();
-
-                        // cancel keyboard listener
-                        jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Humanize)
-
+                        
                         // shift states
                         state.nextState;
+
+                        // cancel keyboard listener
+                        jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Humanize);
 
                         // draw the viewing phase (and return for callback)
                         drawViewing(); return;
                     }
                 } else {
                     timeoutTimer = performance.now();
-                    display_element.innerHTML = `<p> Davis cannot see that side of the tube! <br> Please try again.`
+                    display_element.innerHTML = `<p> Will cannot see that side of the tube! <br> Please try again.</p>`
                     jsPsych.pluginAPI.setTimeout(draw, humanize_errorDelay)
                 }
             }
@@ -244,7 +241,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                 nHumanizeTrials ++;
 
                 // question shown on screen
-                var question = 'Does Davis see the left or right side of the tube? (Indicate using the arrows)'
+                var question = 'Does Will see the left or right side of the tube? (Indicate using the arrows)'
 
                 // get HTML
                 html = `<!DOCTYPE html>`
@@ -273,9 +270,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                 html += `ctx_top.font = "20px Arial";` // set font for new text
                 html += `ctx_top.fillText("` + question + `", canvas_top.width / 2, canvas_top.height * 0.9);` // show text
 
-                // canvas bottom
-                html += `var canvas_bottom = document.getElementById('Blank_BOTTOM');`
-                html += `var ctx_bottom = canvas_bottom.getContext('2d');`
+                // canvas bottom does not need to be updated
 
                 // canvas IMAGE
                 html += `var canvas_IMG = document.getElementById('viewingImage');`
@@ -304,9 +299,10 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
 
         var drawViewing = function () {
             if (trial.verbose) {console.log('drawViewing'); console.log('state: ' + state.cState)}
+            if (!state.isViewing) { endTrial() }; // stop if in wrong state (things got messed up)
 
             // draw and record time
-            if (tStart_Viewing == undefined) { tStart_Viewing = draw(); };
+            if (tStart_Viewing == undefined) { tStart_Viewing = draw() };
 
             // get the correct key response – 39 / Right arrow if tilting right
             var keyAllowed = trialParams.isTiltingRight ? trial.key_increase : trial.key_decrease // 
@@ -334,7 +330,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                     // cancel keyboard listener
                     jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Viewing)
 
-                    // shift line position (depends on tilt direction)
+                    // shift line position (depends on tilt direction - right tilt impiles positive change)
                     trialParams.isTiltingRight ? linePos += trial.step_size : linePos -= trial.step_size;
 
                     // draw moving (and return for callback)
@@ -384,7 +380,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                 html += `var ctx_IMG = canvas_IMG.getContext('2d');`
                 html += `var img = new Image;`
                 html += `img.src = '` + imgViewing + `';`
-                html += `img.onload = function() { ctx_IMG.drawImage(img, 0, 0, ` + screenWidth + `, ` + newImgHeight + `); }`
+                html += ` ctx_IMG.drawImage(img, 0, 0, ` + screenWidth + `, ` + newImgHeight + `);`
 
                 html += `</script>`
 
@@ -402,7 +398,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
 
         /**************************/
         /**************************/
-        /***** Moving  Phase *****/
+        /****** Moving Phase ******/
         /**************************/
         /**************************/
         function drawMoving() {
@@ -480,7 +476,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
 
             // draw the moving screen
             function draw() {
-                console.log('linePos / draw(): ' + linePos)
+                if(trial.verbose) { console.log('linePos / draw(): ' + linePos) }
 
                 // get line Position in radians
                 var linePos_Degree = linePos + 90; // re-orient so that 90 degrees is up
@@ -550,15 +546,6 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         }
 
 
-        drawHumanize();
-
-
-
-
-
-
-
-
         /* When setting the html element using display_element.innerHTML, the scripts are not allowed to run. This function will curcumvent this (in an admittedly odd way) which will allow the scripts of the external html to run */
         function applyScripts(html) {
 
@@ -567,34 +554,16 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
 
             // get scripts and relocate to the proper script location
             for (const scriptElement of display_element.getElementsByTagName("script")) {
-                //console.log(scriptElement)
                 const relocatedScript = document.createElement("script");
                 relocatedScript.text = scriptElement.text;
                 scriptElement.parentNode.replaceChild(relocatedScript, scriptElement);
             };
 
-            //console.log(display_element)
-
-            // helper to load via XMLHttpRequest
-            function load(element, file, callback) {
-                console.log('used load function')
-                var xmlhttp = new XMLHttpRequest();
-                xmlhttp.open("GET", file, true);
-                xmlhttp.onload = function () {
-                    if (xmlhttp.status == 200 || xmlhttp.status == 0) { //Check if loaded
-                        element.innerHTML = xmlhttp.responseText;
-                        callback();
-                    }
-                }
-                xmlhttp.send();
-            }
             return;
         }
 
         function endTrial() {
-            if (trial.verbose) {
-                console.log('ended trial')
-            }
+            if (trial.verbose) { console.log('ended trial') }
 
             // clear keyboard response
             jsPsych.pluginAPI.cancelAllKeyboardResponses();
@@ -609,10 +578,13 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                 "timeMoving": tEnd_Moving - tStart_Moving,
                 "timeHumanize": tEnd_Humanize - tStart_Humanize,
                 "nHumanizeTrials": nHumanizeTrials,
+                "HumanizeImage": imgHumanize,
                 "ViewingImage": imgViewing,
                 "MovingImage": imgMoving,
                 "isPractice": trial.isPractice,
             }
+
+            if (trial.verbose) { console.log(trial_data) };
 
             display_element.innerHTML = '';
 
@@ -620,6 +592,12 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
 
         };
 
+        /**************************/
+        /**************************/
+        /**This starts  the trial**/
+        /**************************/
+        /**************************/
+        drawHumanize();
 
 
 
