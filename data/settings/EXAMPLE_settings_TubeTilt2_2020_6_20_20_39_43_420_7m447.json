@@ -69,7 +69,7 @@
       "type": "survey-multi-select",
       "questions": [{
         "prompt": "Please indicate the statements that are true (multiple selections allowed):",
-        "options": ["<syle style='color:darkgreen'>The tipping point is the theoretical angle where tipping a tube any further and letting go would cause the tube to fall on its side</style>", "<syle style='color:darkgreen'>If you tilt a tube, but not beyond its tipping point, and let go of it, it will fall back to its upright position</style>", "<syle style='color:darkgreen'>If you tilt a tube beyond its tipping point and let go of it, it will fall on its side</style>", "The shape and size of a paper tube determines its tipping point angle"],
+        "options": ["The tipping point is the theoretical angle where tipping a tube any further and letting go would cause the tube to fall on its side", "If you tilt a tube, but not beyond its tipping point, and let go of it, it will fall back to its upright position", "If you tilt a tube beyond its tipping point and let go of it, it will fall on its side", "The shape and size of a paper tube determines its tipping point angle"],
         "horizontal": false,
         "required": true,
         "name": "CheckInstructionsAreUnderstood"
