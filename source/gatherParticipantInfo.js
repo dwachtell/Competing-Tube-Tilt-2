@@ -40,12 +40,12 @@ function gatherParticipantInfo() {
     /**************************/
     /**************************/
     // filename will be in format TubeTilt_DD-MM-YY-HH-mm_UID.extension
-    var expName = 'TubeTilt';
+    var expName = 'TubeTilt2';
     var today = new Date();    
 
     dateFormatted = [today.getFullYear(), today.getMonth(),
                      today.getDate(), today.getHours(),
-                     today.getMinutes(), today.getTimezoneOffset()].join("-")
+                     today.getMinutes(),today.getSeconds(), today.getTimezoneOffset()].join("_")
 
     filename = [expName, dateFormatted, subject_id].join("_");
 
@@ -66,7 +66,8 @@ function gatherParticipantInfo() {
     
 
     var ret = {
-        date: today,
+        date: today.toString(),
+        date_ms: today.getTime(),
         subject_ID: subject_id,
         expName: expName,
         browser: browser,
