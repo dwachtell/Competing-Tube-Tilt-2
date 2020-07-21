@@ -25,10 +25,12 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 - Contains the images needed to run the experiment
 - ['/Humanize/'](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Humanize/) ==> images for the humanize phase
     - In format `FaceType_TubeType`.jpg
-- [Viewing](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Viewing/) ==> images for the viewing phase
+- ['/Viewing/'](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Viewing/) ==> images for the viewing phase
     - In format `FaceType_ArrowDirection_TubeType`.jpg
 - ['/Moving/'](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Moving/) ==> images for the moving phase
    - In format `FaceType_ArrowDirection`.jpg
+- ['/Instructions/'](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Instructions/) ==> images for the instructions
+    - In format `introX`.png where X is a number 1-9
 - The filename is vital to the experiment, so if pictures are changed make sure to maintain the format of the filename (or change the code)
 
 ## [`/jsPsych/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/jspsych)
