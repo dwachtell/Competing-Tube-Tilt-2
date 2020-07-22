@@ -32,6 +32,10 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 - ['/Instructions/'](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/images/Instructions/) ==> images for the instructions
     - In format `introX`.png where X is a number 1-9
 - The filename is vital to the experiment, so if pictures are changed make sure to maintain the format of the filename (or change the code)
+- Element abbreviations
+    - FaceType: OC ==> Open Closed, CO ==> Closed Open
+    - Arrow Direction: LEFT ==> the arrow is pointing left, RIGHT ==> the arrow is pointing right
+    - Tube Type: TT - Tall Thin; TF - Tall Fat; ST - Short Thin; SF - Short Fat
 
 ## [`/jsPsych/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/jspsych)
 - Contains the jsPsych folder and workspace.
@@ -44,6 +48,7 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 - [`data/raw/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/raw) contains the raw csv output from each experiment
 - [`data/respMats/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/respMats) contains the csv response matricies for each subject
 -  [`data/settings/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/settings) contains a json file which contains the timeline for the experiment. Not intended for data analysis, ultimately only for use during final steps of analysis to confirm that each subject performed the same experiment. 
+- Filenames for all groups are usually `SaveCategory_ExperimentName_Year_Month_Day_Hour_Minute_Second_TimezoneOffset_UniqueID`.extension
 
 ## [`/Docs/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/docs)
 - Contains the pdf consent form that is available during the experiment
