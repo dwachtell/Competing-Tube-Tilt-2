@@ -41,7 +41,7 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 - Contains the jsPsych folder and workspace.
 - Be extremely careful about edits to this folder, it can have drastic effects
 
-## [`/Data/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data)
+## [`/data/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data)
 - Contains the directory for the data files.
 - [`data/pInfo/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/pInfo) contains the participant information recorded from each experiment
     * Filename = 'pInfo_TubeTilt'_Year-Month-Day-Hour-Minute-TimeZoneOffset-UniqueID
@@ -50,7 +50,7 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
 -  [`data/settings/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/data/settings) contains a json file which contains the timeline for the experiment. Not intended for data analysis, ultimately only for use during final steps of analysis to confirm that each subject performed the same experiment. 
 - Filenames for all groups are usually `SaveCategory_ExperimentName_Year_Month_Day_Hour_Minute_Second_TimezoneOffset_UniqueID`.extension
 
-## [`/Docs/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/docs)
+## [`/docs/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/docs)
 - Contains the pdf consent form that is available during the experiment
 
 ## `write_data.php`
