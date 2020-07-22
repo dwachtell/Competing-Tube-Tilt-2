@@ -33,9 +33,9 @@ Run me @ https://guterstam.se/OnlineTubeTilt-2/index.html
     - In format `introX`.png where X is a number 1-9
 - The filename is vital to the experiment, so if pictures are changed make sure to maintain the format of the filename (or change the code)
 - Element abbreviations
-    - FaceType: OC ==> Open Closed, CO ==> Closed Open
-    - Arrow Direction: LEFT ==> the arrow is pointing left, RIGHT ==> the arrow is pointing right
-    - Tube Type: TT - Tall Thin; TF - Tall Fat; ST - Short Thin; SF - Short Fat
+    - **FaceType:** OC ==> Open Closed, CO ==> Closed Open
+    - **Arrow Direction:** LEFT ==> the arrow is pointing left, RIGHT ==> the arrow is pointing right
+    - **Tube Type:** TT - Tall Thin; TF - Tall Fat; ST - Short Thin; SF - Short Fat
 
 ## [`/jsPsych/`](https://github.com/dwachtell/Competing-Tube-Tilt-2/tree/master/jspsych)
 - Contains the jsPsych folder and workspace.
