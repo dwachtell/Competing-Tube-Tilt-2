@@ -48,6 +48,9 @@
     var fullscr_ON = 0; // var that tracks fullscreen activity
     var monitor_browser_interactions = false;
 
+
+
+
     const timelineVariables = [
         {humanize: "images/Humanize/CO_SF.jpg", viewing: "images/Viewing/CO_LEFT_SF.jpg", moving: "images/Moving/Closed_Open.jpg"},
         {humanize: "images/Humanize/CO_ST.jpg", viewing: "images/Viewing/CO_LEFT_ST.jpg", moving: "images/Moving/Closed_Open.jpg"},
@@ -75,7 +78,7 @@
         // images for Viewing Phase
         "images/Viewing/CO_LEFT_SF.jpg", "images/Viewing/CO_LEFT_ST.jpg", "images/Viewing/CO_LEFT_TF.jpg", "images/Viewing/CO_LEFT_TT.jpg", 
         "images/Viewing/OC_LEFT_SF.jpg", "images/Viewing/OC_LEFT_ST.jpg", "images/Viewing/OC_LEFT_TF.jpg", "images/Viewing/OC_LEFT_TT.jpg",
-        
+
         "images/Viewing/CO_RIGHT_SF.jpg", "images/Viewing/CO_RIGHT_ST.jpg", "images/Viewing/CO_RIGHT_TF.jpg", "images/Viewing/CO_RIGHT_TT.jpg",
         "images/Viewing/OC_RIGHT_SF.jpg", "images/Viewing/OC_RIGHT_ST.jpg", "images/Viewing/OC_RIGHT_TF.jpg", "images/Viewing/OC_RIGHT_TT.jpg", 
 
@@ -115,15 +118,19 @@
     /*** Get Size of Screen ***/
     /**************************/
     /**************************/
-    var creditCard_width = 3 + 3/8;
-    var creditCard_height = 2 + 1/8;
+    // units are inches, but only dependent on the ratio. If another unit is desired, change the units below (in mm: w = 85.6 mm, h = 53.98 mm)
+    var creditCard_width = 3 + 3/8; // inches
+    var creditCard_height = 2 + 1/8; // inches
 
     var ScreenDims = {
         type: 'davis-resize',   // this resize plugin has been edited. DO NOT USE WITH A STANDARD PLUGIN.
         item_width: creditCard_width, 
         item_height: creditCard_height, 
         starting_size: 400,
-        prompt: "<p>Click and drag the lower right corner of the box until the box is the same size as a credit card held up to the screen.</p>"
+        prompt: "<p>Click and drag the lower right corner of the box until the box is the same size as a credit card held up to the screen.</p>",
+        on_finish: function(data){
+            nonMainResponseBin.estimatedScreenDiagonal = data.screenDiagonal_Inches
+        }
     };
 
 
@@ -132,7 +139,7 @@
     /****** Instructions ******/
     /**************************/
     /**************************/
-var instructions_string = [
+    var instructions_string = [
         `<div style="max-width:600px";><p>Welcome!<p></p>Please read the step-by-step instructions carefully. You can use the arrow keys, or the buttons below, to navigate.</p></div>`,
 
         `<div style="max-width:600px";><p>On each trial, you will see a screen similar to the screen below. The white rectangle represents a standard sheet of paper that's been rolled into a tube, taped closed, and set upright on a flat table.</p><p><img src="images/Instructions/intro1.png" width="495"></p></div>`,
@@ -148,7 +155,7 @@ var instructions_string = [
         `<div style="max-width:600px";><p>The size and shape of the tube will differ from trial to trial. Keep in mind that different tubes have different tipping points.</p><p><img src="images/Instructions/intro6.png" width="650"></p></div>`,
 
         `<div style="max-width:600px";><p>Additionally, on each trial, the identical twins Will and Davis are also going to be on the screen, facing the tube. One of them will be staring at the tube, while the other one is blindfolded (and doesn't see anything). You will be asked questions about Will and Davis throughout the experiment. </p><p><img src="images/Instructions/intro7.png" width="650"></p></div>`,
-    
+
         `<div style="max-width:600px";><p>On each trial, you will also be asked to identify which side of the tube Will is able to see. Think about what Will would be able to see given his placement to the tube. <u>Remember that Will is always the sighted face.</u></p><p><img src="images/Instructions/intro8.png" width="650"></p></div>`,
 
         `<div style="max-width:600px";><p>You're now ready for a couple of practice trials!<p>Press the "next" to continue.</p><p><img src="images/Instructions/intro9.png" width="650"></p></div>`
@@ -251,7 +258,6 @@ var instructions_string = [
             return(jsPsych.timelineVariable('moving', true))
         },
         verbose: false,
-        attention_controller: true,
         step_size: stepSize,
         isPractice: true,
         allow_held_key: true,

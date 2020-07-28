@@ -23,42 +23,50 @@ var pre_exp_survey_1 = {
     },
 };
 
-var pre_exp_survey_2 = {
-    type: 'survey-text',
-    preamble: '<b><u>Basic information (1/3)</u></b>',
-    questions: [
-        {prompt: "<b>Your age:</b>", name: 'age', required: 'true',rows: 1, columns: 2},
-    ],
+
+var pre_exp_survey_2_to_4 = {
+    type: 'survey-html-form',
+    preamble: '<h3> Please provide some basic information about yourself </h3>',
+    button_label: "Submit",
+    html: 
+    `<hr>` + 
+    // Age
+    `<label for="Age"><b>Age</b></label>` +
+    `<div>Enter your age here: <input required id="Age" name="Age" type="number" min=18 max=120> years old</div>` +
+    `<hr>` + 
+    
+    // Gender
+    `<label><b>Gender</b></label>` +
+    `<br>` + 
+    `<label for="male">Male</label>` + 
+    `<input required type="radio" id="male" name="gender" value="Male">` + 
+    `<br>` + 
+    `<label required for="female">Female</label>` + 
+    `<input type="radio" id="female" name="gender" value="Female">` + 
+    `<hr>` + 
+    
+    // Handedness
+    `<label><b>Handedness</b></label>` +
+    `<div>` + 
+    `<label for="R_Handed">Right</label>` + 
+    `<input required type="radio" id="R_Handed" name="handedness" value="RIGHT">` + 
+    `<br>` + 
+    `<label for="L_Handed">Left</label>` + 
+    `<input required type="radio" id="L_Handed" name="handedness" value="LEFT">` + 
+    `</div>` + 
+    `<hr>`,
     on_finish: function(data){
-        nonMainResponseBin.age = JSON.parse(data.responses).age;
-    },
+        responses = JSON.parse(data.responses);
+        nonMainResponseBin.age = parseInt(responses.Age);
+        nonMainResponseBin.gender = responses.gender;
+        nonMainResponseBin.handedness = responses.handedness;
+    }
 };
 
-var pre_exp_survey_3 = {
-    type: 'survey-multi-choice',
-    preamble: '<b><u>Basic information (2/3)</u></b>',
-    questions: [
-        {prompt: "<b>Gender:</b>", name: 'sex', options: ["Male", "Female"], required: true},
-    ],
-    on_finish: function(data){
-        nonMainResponseBin.gender = JSON.parse(data.responses).sex;
-    },
-};
-
-var pre_exp_survey_4 = {
-    type: 'survey-multi-choice',
-    preamble: '<b><u>Basic information (3/3)</u></b>',
-    questions: [{prompt: "<b>Handedness:</b>", name: 'handedness', options: ["Right", "Left"], required: true}],
-    on_finish: function(data){
-        nonMainResponseBin.handedness = JSON.parse(data.responses).handedness;
-    },
-};
 
 var pre_exp_survey_block = {
-    timeline: [pre_exp_survey_1,pre_exp_survey_2,pre_exp_survey_3, pre_exp_survey_4],
+    timeline: [pre_exp_survey_1, pre_exp_survey_2_to_4],
 }
-
-
 
 
 /**************************/
@@ -87,7 +95,7 @@ var post_exp2_ifYes = {
     },
     type: 'survey-text',
     questions: [{prompt: '<div style="max-width:600px;">Please describe in what way the presence of Will and Davis influenced your performance on the tube tilting task:</div>',
-                name: "influence_string", rows: 5, columns: 80, required: true},],
+                 name: "influence_string", rows: 5, columns: 80, required: true},],
     on_finish: function(data){
         nonMainResponseBin.HeadInfluence_string = JSON.parse(data.responses).influence_string;
     }

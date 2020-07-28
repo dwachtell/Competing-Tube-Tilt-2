@@ -121,7 +121,6 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         var tStart_Humanize, tEnd_Humanize, tStart_Viewing, tEnd_Moving, tStart_Moving, tEnd_Viewing
         const states = ["Humanize", "Viewing", "Moving"];
         var humanize_errorDelay = 1500; // 1.5 seconds
-        var nHumanizeTrials = 0;
 
         // setup a state tracking object
         var state = {
@@ -131,8 +130,8 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
 
             // these will return true if the trial is in that state
             get isHumanize() {return (states[this.state_indx] == "Humanize") },
-            get isViewing() { return (states[this.state_indx] == "Viewing") },
-            get isMoving() { return (states[this.state_indx] == "Moving") },
+            get isViewing()  {return (states[this.state_indx] == "Viewing") },
+            get isMoving()   {return (states[this.state_indx] == "Moving") },
         }
 
         /**************************/
@@ -142,11 +141,11 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         /**************************/
 
         // Original Image Size
-        var img_Viewing = new Image();
-        img_Viewing.src = trial.img_Viewing;
+        var imView = new Image();
+        imView.src = trial.img_Viewing;
         const origImageDims = { // get real image size
-            width: img_Viewing.width,
-            height: img_Viewing.height,
+            width: imView.width,
+            height: imView.height,
         }
 
         // image path and parameters
@@ -170,25 +169,27 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         /**************************/
         /**************************/
 
-        // screen size
+        // window/screen size
         const screenWidth = window.innerWidth // screen.availWidth;
         const screenHeight = window.innerHeight; // screen.availHeight
 
         // new image and canvas dimensions
         var ratio = origImageDims.width / screenWidth;
         var newImgHeight = Math.round(origImageDims.height / ratio);
-        var canvHeight_NoImage = Math.floor((screenHeight - newImgHeight) / 2)
+        var canvHeight_NoImage = Math.floor((screenHeight - newImgHeight) / 2) // the size of both canvases without images is the remaining space of the page split by two. This centers the image vertically
 
         /**************************/
         /**************************/
         /*** Humanization Phase ***/
         /**************************/
         /**************************/
-        var drawHumanize = function () {
-            if (trial.verbose) {console.log('drawHumanize'); console.log('state: ' + state.cState)};
+        var nHumanizeTrials = 0; // this is a counter, not a constant
+        // Notice: This function is called immediately. Do not remove the parenthases on the end of this function, or else this plugin will do nothing.
+        var stateHumanize = function () {
+            if (trial.verbose) {console.log('stateHumanize'); console.log('state: ' + state.cState)};
             if (!state.isHumanize) {endTrial()}; // stop if in wrong state (things got messed up)
 
-            // start timer if not started
+            // start timer and do first draw
             if (tStart_Humanize == undefined) { tStart_Humanize = draw() };
 
             // find correct key
@@ -205,7 +206,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
             })
 
             // initilize timeout timer. Without this the button presses are still valid during the timeout
-            var timeoutTimer;
+            var timeout_tEnd;
 
             // setup key handler
             function keyHandler_Humanize(keyCode) {
@@ -214,11 +215,11 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
 
                     // if timout timer is undefined ==> no missed trial, continue
                     // if timeout timer is defined ==> missed trial, ensure time since answer is greater than timeout
-                    if( (timeoutTimer == undefined) || (performance.now() - timeoutTimer > humanize_errorDelay)){
+                    if( (timeout_tEnd == undefined) || (performance.now() > timeout_tEnd)){
 
                         // record end time
                         tEnd_Humanize = performance.now();
-                        
+
                         // shift states
                         state.nextState;
 
@@ -226,15 +227,27 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                         jsPsych.pluginAPI.cancelKeyboardResponse(keyListener_Humanize);
 
                         // draw the viewing phase (and return for callback)
-                        drawViewing(); return;
+                        stateViewing(); return;
                     }
                 } else {
-                    timeoutTimer = performance.now();
-                    display_element.innerHTML = `<p> Will cannot see that side of the tube! <br> Please try again.</p>`
+                    if (timeout_tEnd == undefined) { // if no previously defined timout
+                        timeout_tEnd = performance.now() + humanize_errorDelay
+                    }
+                    else if (performance.now() < timeout_tEnd) { // there has been a miss, but the timer should not be reset yet
+                        return;
+                    }
+                    else { // timer should be reset, 
+                        timeout_tEnd = performance.now() + humanize_errorDelay;
+                    }
+
+                    // display new html element
+                    display_element.innerHTML = `<style>*{cursor: none} </style><p> Will cannot see that side of the tube! <br> Please try again.</p>`
+
+                    // wait till timeout is over, draw again
                     jsPsych.pluginAPI.setTimeout(draw, humanize_errorDelay)
                 }
             }
-
+            
 
             function draw() {
                 // increment number of humanize trials
@@ -289,16 +302,16 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
 
                 return (performance.now())
             }
-        };
-
+        }();
+        
+        
         /**************************/
         /**************************/
         /***** Viewing  Phase *****/
         /**************************/
         /**************************/
-
-        var drawViewing = function () {
-            if (trial.verbose) {console.log('drawViewing'); console.log('state: ' + state.cState)}
+        function stateViewing(){
+            if (trial.verbose) {console.log('stateViewing'); console.log('state: ' + state.cState)}
             if (!state.isViewing) { endTrial() }; // stop if in wrong state (things got messed up)
 
             // draw and record time
@@ -334,7 +347,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
                     trialParams.isTiltingRight ? linePos += trial.step_size : linePos -= trial.step_size;
 
                     // draw moving (and return for callback)
-                    drawMoving(); return;
+                    stateMoving(); return;
                 } else { // wrong key pressed (do nothing)
                     return
                 }
@@ -401,8 +414,8 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         /****** Moving Phase ******/
         /**************************/
         /**************************/
-        function drawMoving() {
-            if (trial.verbose) {console.log('drawMoving'); console.log('state: ' + state.cState)}
+        function stateMoving() {
+            if (trial.verbose) {console.log('stateMoving'); console.log('state: ' + state.cState)}
 
             // draw and record time
             if (tStart_Moving == undefined) { tStart_Moving = draw() };
@@ -546,7 +559,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
         }
 
 
-        /* When setting the html element using display_element.innerHTML, the scripts are not allowed to run. This function will curcumvent this (in an admittedly odd way) which will allow the scripts of the external html to run */
+        /* When setting the html element using display_element.innerHTML, the scripts are not allowed to run. This function will curcumvent this which will allow the scripts of the external html to run */
         function applyScripts(html) {
 
             // load html to display_element
@@ -560,7 +573,7 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
             };
 
             return;
-        }
+        };
 
         function endTrial() {
             if (trial.verbose) { console.log('ended trial') }
@@ -591,16 +604,6 @@ jsPsych.plugins['Davis-Tube-Tilt'] = (function () {
             jsPsych.finishTrial(trial_data);
 
         };
-
-        /**************************/
-        /**************************/
-        /**This starts  the trial**/
-        /**************************/
-        /**************************/
-        drawHumanize();
-
-
-
 
     };
 
